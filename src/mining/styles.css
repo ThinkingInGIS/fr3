@@ -1,0 +1,1627 @@
+:root {
+  --mine-bg: #060a10;
+  --mine-panel: rgba(13, 21, 32, 0.94);
+  --mine-strong: #101a29;
+  --mine-border: rgba(83, 156, 255, 0.26);
+  --mine-blue: #37a7ff;
+  --mine-cyan: #2ee6d6;
+  --mine-orange: #ffb84d;
+  --mine-green: #39d98a;
+  --mine-red: #ff5b6e;
+  --mine-text: #eaf3ff;
+  --mine-muted: #8096ad;
+  --mine-dim: #4d6177;
+  --mine-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+.mining-shell {
+  height: 100vh;
+  min-width: 1280px;
+  overflow: hidden;
+  color: var(--mine-text);
+  background: radial-gradient(
+    circle at 46% 20%,
+    #102339 0,
+    #070c14 40%,
+    #05080e 100%
+  );
+  font-family: Inter, "Segoe UI", "Microsoft YaHei UI", sans-serif;
+  display: grid;
+  grid-template-rows: 64px 72px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px;
+  position: relative;
+}
+.mining-shell * {
+  box-sizing: border-box;
+}
+.mining-shell button,
+.mining-shell input,
+.mining-shell textarea,
+.mining-shell select {
+  font: inherit;
+  color: inherit;
+}
+.mining-shell:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.25;
+  background-image:
+    linear-gradient(rgba(55, 167, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 167, 255, 0.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+.mining-shell:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 110px rgba(0, 0, 0, 0.48);
+}
+.mine-header,
+.workflow-strip,
+.mine-panel {
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--mine-border);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 24, 37, 0.97),
+    rgba(8, 14, 23, 0.95)
+  );
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.015),
+    0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.mine-header:before,
+.mine-panel:before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 28px;
+  height: 1px;
+  background: var(--mine-blue);
+  box-shadow: 0 0 9px rgba(55, 167, 255, 0.6);
+}
+.mine-header {
+  display: flex;
+  align-items: center;
+  padding: 7px 12px;
+  gap: 18px;
+  z-index: 4;
+}
+.mine-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  text-align: center;
+}
+.mine-logo {
+  width: 69px;
+  height: 69px;
+  display: block;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.mine-brand h1 {
+  font-size: 18px;
+  margin: 0 0 3px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.mine-brand p {
+  margin: 0;
+  color: var(--mine-cyan);
+  font: 500 8px var(--mine-mono);
+  letter-spacing: 0.12em;
+}
+.product-nav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border-left: 1px solid var(--mine-border);
+  padding-left: 14px;
+}
+.product-nav a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--mine-muted);
+  font-size: 9px;
+  padding: 6px 8px;
+  border-bottom: 1px solid transparent;
+}
+.product-nav a.router-link-active {
+  color: var(--mine-cyan);
+  background: rgba(46, 230, 214, 0.06);
+  border-color: var(--mine-cyan);
+}
+.header-status-group {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.header-status {
+  height: 42px;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--mine-border);
+  background: rgba(7, 13, 21, 0.68);
+  padding: 5px 9px;
+  text-align: left;
+}
+.header-status > svg {
+  color: var(--mine-blue);
+}
+.header-status div {
+  min-width: 0;
+}
+.header-status span {
+  display: block;
+  color: var(--mine-muted);
+  font-size: 7px;
+}
+.header-status strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font: 500 10px var(--mine-mono);
+  white-space: nowrap;
+}
+.header-status strong i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.header-status i.online {
+  background: var(--mine-green);
+  box-shadow: 0 0 7px var(--mine-green);
+}
+.header-status i.offline {
+  background: var(--mine-red);
+}
+.connection-card {
+  cursor: pointer;
+}
+.connection-card > svg:last-child {
+  margin-left: auto;
+}
+.clock-value {
+  font-size: 9px !important;
+}
+.mode-value {
+  color: var(--mine-cyan);
+}
+.mode-value.error {
+  color: var(--mine-red);
+}
+.mode-value.paused {
+  color: var(--mine-orange);
+}
+.connection-popover {
+  position: absolute;
+  right: 339px;
+  top: 58px;
+  width: 320px;
+  padding: 8px;
+  background: #0b1320;
+  border: 1px solid var(--mine-border);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  z-index: 8;
+}
+.connection-popover > div {
+  display: grid;
+  grid-template-columns: 8px 1fr 70px 45px;
+  align-items: center;
+  gap: 7px;
+  padding: 5px;
+  border-bottom: 1px solid rgba(83, 156, 255, 0.1);
+  font-size: 8px;
+}
+.connection-popover i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mine-dim);
+}
+.connection-popover i.online {
+  background: var(--mine-green);
+}
+.connection-popover i.error {
+  background: var(--mine-red);
+}
+.connection-popover strong {
+  font: 8px var(--mine-mono);
+  color: var(--mine-green);
+}
+.connection-popover small {
+  color: var(--mine-muted);
+  text-align: right;
+}
+.workflow-strip {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  z-index: 2;
+}
+.workflow-prefix {
+  width: 145px;
+  border-right: 1px solid var(--mine-border);
+}
+.workflow-prefix span,
+.mine-panel-head span {
+  display: block;
+  color: var(--mine-blue);
+  font: 500 7px var(--mine-mono);
+  letter-spacing: 0.15em;
+}
+.workflow-prefix strong {
+  font-size: 11px;
+}
+.workflow-steps {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+}
+.workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--mine-dim);
+  min-width: 130px;
+}
+.step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(83, 156, 255, 0.2);
+  background: #0b1420;
+}
+.workflow-step b {
+  font: 6px var(--mine-mono);
+  display: block;
+  color: var(--mine-dim);
+}
+.workflow-step strong {
+  font-size: 10px;
+  display: block;
+}
+.workflow-step small {
+  font-size: 6.5px;
+  display: block;
+  color: var(--mine-dim);
+}
+.workflow-step.completed {
+  color: var(--mine-green);
+}
+.workflow-step.completed .step-icon {
+  border-color: rgba(57, 217, 138, 0.45);
+  background: rgba(57, 217, 138, 0.09);
+}
+.workflow-step.active {
+  color: var(--mine-cyan);
+}
+.workflow-step.active .step-icon {
+  border-color: var(--mine-cyan);
+  background: rgba(46, 230, 214, 0.11);
+  box-shadow: 0 0 15px rgba(46, 230, 214, 0.18);
+  animation: minePulse 1.8s infinite;
+}
+.workflow-step.error {
+  color: var(--mine-red);
+}
+.workflow-step.error .step-icon {
+  border-color: var(--mine-red);
+  background: rgba(255, 91, 110, 0.1);
+}
+@keyframes minePulse {
+  50% {
+    box-shadow: 0 0 24px rgba(46, 230, 214, 0.32);
+  }
+}
+.step-link {
+  height: 1px;
+  min-width: 24px;
+  flex: 1;
+  max-width: 60px;
+  background: var(--mine-border);
+  margin: 0 5px;
+}
+.step-link.completed {
+  background: var(--mine-green);
+}
+.workflow-message {
+  width: 250px;
+  border-left: 1px solid var(--mine-border);
+  padding-left: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+.workflow-message span {
+  font-size: 7px;
+  color: var(--mine-muted);
+}
+.workflow-message strong {
+  font-size: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 205px;
+}
+.workflow-message em {
+  grid-row: 1/3;
+  grid-column: 2;
+  font: 600 18px var(--mine-mono);
+  color: var(--mine-cyan);
+  font-style: normal;
+  align-self: center;
+}
+.mining-main-grid {
+  --content-gap: 8px;
+  --robot-status-height: 108px;
+  --mining-info-height: 190px;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  z-index: 1;
+}
+.mining-left,
+.mining-center,
+.mining-right {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+.mining-left {
+  grid-column: 1;
+  grid-template-rows: 180px minmax(0, 1fr);
+}
+.mining-center {
+  grid-column: 2 / span 2;
+  grid-template-rows: minmax(250px, 1fr) var(--robot-status-height) var(--mining-info-height);
+}
+.mining-right {
+  grid-column: 4;
+  grid-template-rows: minmax(250px, 1fr) var(--robot-status-height) var(--mining-info-height);
+}
+.mining-right > .log-card {
+  grid-row: 2 / span 2;
+}
+.mining-visual-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+}
+.mining-info-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 8px;
+  min-height: 0;
+}
+.mine-panel {
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px;
+}
+.mine-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.mine-panel-head.compact {
+  margin-bottom: 5px;
+}
+.mine-panel-head h2 {
+  font-size: 12px;
+  margin: 1px 0 0;
+}
+.mine-panel-head > em,
+.task-total,
+.log-count {
+  font: normal 7px var(--mine-mono);
+  color: var(--mine-cyan);
+  border: 1px solid rgba(46, 230, 214, 0.25);
+  padding: 3px 5px;
+}
+.head-state {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--mine-muted);
+  font: 7px var(--mine-mono);
+  border: 1px solid var(--mine-border);
+  padding: 3px 5px;
+}
+.head-state i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mine-green);
+  box-shadow: 0 0 5px var(--mine-green);
+}
+.head-state i.mock {
+  background: var(--mine-orange);
+  box-shadow: none;
+}
+.command-card {
+  display: flex;
+  flex-direction: column;
+}
+.command-input-wrap {
+  position: relative;
+  flex: 1;
+}
+.command-input-wrap textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  outline: 0;
+  border: 1px solid var(--mine-border);
+  background: #08111d;
+  color: var(--mine-text);
+  padding: 8px 33px 8px 8px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.command-input-wrap textarea:focus {
+  border-color: var(--mine-blue);
+  box-shadow: inset 0 0 10px rgba(55, 167, 255, 0.07);
+}
+.voice-button {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 25px;
+  height: 25px;
+  border: 1px solid var(--mine-border);
+  background: #0d1a29;
+  color: var(--mine-dim);
+}
+.command-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+}
+.send-command {
+  height: 27px;
+  border: 1px solid var(--mine-blue);
+  background: linear-gradient(
+    90deg,
+    rgba(55, 167, 255, 0.25),
+    rgba(46, 230, 214, 0.12)
+  );
+  padding: 0 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  cursor: pointer;
+}
+.send-command:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.command-actions span {
+  font-size: 6.5px;
+  color: var(--mine-muted);
+}
+.command-feedback {
+  font-size: 7px;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.command-feedback.error {
+  color: var(--mine-red);
+}
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 5px;
+}
+.demo-controls button {
+  height: 23px;
+  padding: 0 6px;
+  border: 1px solid var(--mine-border);
+  background: #0d1825;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 7px;
+  cursor: pointer;
+}
+.demo-controls button:disabled {
+  opacity: 0.3;
+}
+.demo-controls .fault-btn {
+  color: var(--mine-orange);
+  border-color: rgba(255, 184, 77, 0.35);
+}
+.demo-controls label {
+  margin-left: auto;
+  font-size: 7px;
+  color: var(--mine-muted);
+}
+.demo-controls select {
+  background: #08111d;
+  border: 1px solid var(--mine-border);
+  font: 7px var(--mine-mono);
+  padding: 2px;
+}
+.safety-note {
+  margin: 4px 0 0;
+  color: #6e8297;
+  font-size: 6.5px;
+}
+.task-board {
+  display: flex;
+  flex-direction: column;
+}
+.task-total strong {
+  font-size: 12px;
+}
+.plan-summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid var(--mine-border);
+  background: rgba(55, 167, 255, 0.045);
+  margin-bottom: 6px;
+}
+.plan-summary > svg {
+  color: var(--mine-blue);
+}
+.plan-summary strong {
+  display: block;
+  font-size: 9px;
+}
+.plan-summary span {
+  display: block;
+  color: var(--mine-muted);
+  font-size: 7px;
+}
+.plan-summary em {
+  font: normal 13px var(--mine-mono);
+  color: var(--mine-cyan);
+}
+.task-tree {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #27445e transparent;
+}
+.plan-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--mine-dim);
+  font-size: 8px;
+}
+.plan-empty i {
+  width: 65%;
+  height: 22px;
+  border: 1px solid rgba(83, 156, 255, 0.12);
+  background: linear-gradient(90deg, rgba(55, 167, 255, 0.04), transparent);
+}
+.parent-task {
+  margin-bottom: 5px;
+}
+.parent-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 24px 1fr 55px auto;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  border: 1px solid var(--mine-border);
+  background: #0b1522;
+  padding: 6px;
+  cursor: pointer;
+}
+.parent-row > b {
+  font: 600 11px var(--mine-mono);
+  color: var(--mine-blue);
+}
+.parent-row strong {
+  display: block;
+  font-size: 9px;
+}
+.parent-row div span {
+  display: block;
+  font: 6.5px var(--mine-mono);
+  color: var(--mine-muted);
+}
+.parent-progress {
+  height: 2px;
+  background: #192a3c;
+}
+.parent-progress span {
+  display: block;
+  height: 100%;
+  background: var(--mine-cyan);
+}
+.rotated {
+  transform: rotate(180deg);
+}
+.child-list {
+  margin-left: 13px;
+  border-left: 1px solid var(--mine-border);
+  padding: 3px 0 0 9px;
+}
+.child-task {
+  display: grid;
+  grid-template-columns: 13px 22px 1fr auto;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 5px;
+  margin-bottom: 2px;
+  background: rgba(8, 15, 24, 0.7);
+  border-left: 2px solid transparent;
+}
+.child-task > svg {
+  color: var(--mine-dim);
+}
+.child-task > b {
+  font: 7px var(--mine-mono);
+  color: var(--mine-dim);
+}
+.child-task strong {
+  font-size: 8px;
+  display: block;
+}
+.child-task div span {
+  font-size: 6.5px;
+  color: var(--mine-muted);
+  display: block;
+}
+.child-task > em {
+  font: normal 7px var(--mine-mono);
+  color: var(--mine-muted);
+}
+.child-task.running {
+  border-color: var(--mine-cyan);
+  background: rgba(46, 230, 214, 0.07);
+}
+.child-task.running > svg,
+.child-task.running > b,
+.child-task.running > em {
+  color: var(--mine-cyan);
+}
+.child-task.completed {
+  opacity: 0.58;
+}
+.child-task.completed > svg {
+  color: var(--mine-green);
+}
+.child-task.failed {
+  border-color: var(--mine-red);
+  background: rgba(255, 91, 110, 0.07);
+}
+.child-task.failed > svg {
+  color: var(--mine-red);
+}
+.twin-card {
+  padding: 0;
+}
+.overlay-head {
+  position: absolute;
+  top: 10px;
+  left: 11px;
+  right: 11px;
+  z-index: 2;
+  pointer-events: none;
+}
+.mine-twin-host {
+  position: absolute;
+  inset: 0;
+}
+.mine-twin-host canvas {
+  display: block;
+}
+.twin-toolbar {
+  position: absolute;
+  top: 49px;
+  left: 11px;
+  display: flex;
+  gap: 3px;
+  z-index: 2;
+}
+.twin-toolbar button {
+  height: 25px;
+  border: 1px solid var(--mine-border);
+  background: rgba(7, 14, 22, 0.78);
+  padding: 0 6px;
+  font-size: 7px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+.twin-toolbar button:hover,
+.twin-toolbar .preview-btn {
+  border-color: var(--mine-blue);
+  color: var(--mine-cyan);
+}
+.twin-toolbar .preview-btn.running {
+  border-color: var(--mine-amber);
+  color: var(--mine-amber);
+  box-shadow: 0 0 12px rgba(255, 184, 77, 0.2);
+}
+.twin-toolbar button.off {
+  opacity: 0.45;
+}
+.twin-caption {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: rgba(6, 12, 19, 0.72);
+  border: 1px solid var(--mine-border);
+  padding: 5px 7px;
+  z-index: 2;
+  font-size: 7px;
+  color: var(--mine-muted);
+}
+.twin-caption span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.path {
+  width: 15px;
+  height: 2px;
+}
+.path.planned {
+  border-top: 1px dashed var(--mine-blue);
+}
+.path.executed {
+  background: var(--mine-cyan);
+}
+.twin-caption strong {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mine-cyan);
+  font: 500 8px var(--mine-mono);
+}
+.camera-card {
+  display: flex;
+  flex-direction: column;
+}
+.camera-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 5px;
+}
+.camera-tabs button {
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--mine-muted);
+  font-size: 7px;
+  padding: 3px 5px;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  cursor: pointer;
+}
+.camera-tabs button.active {
+  color: var(--mine-cyan);
+  border-color: var(--mine-cyan);
+  background: rgba(46, 230, 214, 0.05);
+}
+.camera-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 80px;
+  background: #03070b;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.camera-viewport > img,
+.mine-camera-mock {
+  width: 100%;
+  aspect-ratio: 16/9;
+  max-height: 100%;
+  object-fit: contain;
+}
+.mine-camera-mock {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    #31475b 0,
+    #152332 48%,
+    #070c12 100%
+  );
+}
+.mine-camera-mock.global:after {
+  content: "";
+  position: absolute;
+  inset: 60% 0 0;
+  background: linear-gradient(#1a2632, #0c121a);
+  border-top: 2px solid #536778;
+}
+.mine-grid {
+  position: absolute;
+  inset: 25% -15% -35%;
+  transform: rotateX(58deg);
+  background-image:
+    linear-gradient(rgba(103, 167, 210, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(103, 167, 210, 0.13) 1px, transparent 1px);
+  background-size: 35px 35px;
+}
+.material {
+  position: absolute;
+  z-index: 2;
+  display: block;
+}
+.material.rod {
+  width: 24%;
+  height: 4%;
+  left: 12%;
+  top: 37%;
+  background: #7697ae;
+  transform: rotate(-5deg);
+  border-radius: 8px;
+}
+.material.resin {
+  width: 7%;
+  height: 21%;
+  left: 58%;
+  top: 27%;
+  background: #dda640;
+  border-radius: 8px;
+}
+.material.bolt {
+  width: 34%;
+  height: 3%;
+  left: 41%;
+  top: 67%;
+  background: #45b8b5;
+  transform: rotate(4deg);
+  border-radius: 6px;
+}
+.safety-zone {
+  position: absolute;
+  right: 5%;
+  top: 17%;
+  width: 28%;
+  height: 54%;
+  border: 1px dashed rgba(255, 184, 77, 0.55);
+  background: rgba(255, 184, 77, 0.03);
+}
+.mine-wall {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  color: #7e9bb2;
+  font: 6px var(--mine-mono);
+}
+.mine-camera-mock.wrist {
+  background: radial-gradient(
+    ellipse at 50% 55%,
+    #51626c,
+    #202d36 45%,
+    #090e13 100%
+  );
+}
+.wrist-gripper {
+  position: absolute;
+  top: -7%;
+  width: 14%;
+  height: 48%;
+  background: linear-gradient(90deg, #12191e, #56636a, #141b20);
+  z-index: 2;
+}
+.wrist-gripper.left {
+  left: 17%;
+  transform: rotate(-12deg);
+}
+.wrist-gripper.right {
+  right: 17%;
+  transform: rotate(12deg);
+}
+.close-target {
+  position: absolute;
+  left: 31%;
+  top: 48%;
+  width: 45%;
+  height: 12%;
+  border-radius: 18px;
+  background: #718fa2;
+  transform: rotate(-4deg);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+}
+.mining-detection-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+.mining-detection-overlay rect {
+  fill: transparent;
+  stroke: #61a4d8;
+  stroke-width: 3;
+}
+.mining-detection-overlay rect.selected {
+  stroke: var(--mine-cyan);
+  stroke-width: 5;
+  filter: drop-shadow(0 0 7px rgba(46, 230, 214, 0.65));
+}
+.mining-detection-overlay > g > path {
+  fill: #37a7ff;
+}
+.mining-detection-overlay text {
+  fill: #06101b;
+  font: 600 14px var(--mine-mono);
+}
+.mining-grasp circle,
+.mining-grasp path {
+  fill: none !important;
+  stroke: var(--mine-orange);
+  stroke-width: 3;
+}
+.camera-meta {
+  position: absolute;
+  left: 5px;
+  bottom: 4px;
+  z-index: 4;
+  background: rgba(3, 8, 12, 0.72);
+  padding: 3px 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mine-muted);
+  font: 6px var(--mine-mono);
+}
+.camera-meta span {
+  color: var(--mine-cyan);
+}
+.camera-expand {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  z-index: 4;
+  width: 25px;
+  height: 25px;
+  border: 1px solid var(--mine-border);
+  background: rgba(4, 10, 16, 0.7);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.robot-status-card {
+  overflow: visible;
+}
+.robot-status-tools {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.robot-status-tools button {
+  width: 24px;
+  height: 21px;
+  border: 1px solid var(--mine-border);
+  background: #0b1522;
+  font: 7px var(--mine-mono);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.controller-state {
+  font: 500 7px var(--mine-mono);
+  color: var(--mine-muted);
+  border: 1px solid var(--mine-border);
+  padding: 3px 5px;
+}
+.controller-state.executing {
+  color: var(--mine-cyan);
+  border-color: rgba(46, 230, 214, 0.35);
+}
+.controller-state.error {
+  color: var(--mine-red);
+}
+.robot-metrics {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1fr 0.8fr;
+  gap: 4px;
+}
+.robot-metrics > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 5px;
+  border: 1px solid rgba(83, 156, 255, 0.14);
+  background: rgba(7, 14, 23, 0.58);
+  padding: 7px;
+}
+.robot-metrics svg {
+  grid-row: 1/3;
+  color: var(--mine-blue);
+}
+.robot-metrics span {
+  font-size: 6.5px;
+  color: var(--mine-muted);
+}
+.robot-metrics strong {
+  font: 500 9px var(--mine-mono);
+  white-space: nowrap;
+}
+.robot-metrics small {
+  font-size: 6px;
+  color: var(--mine-muted);
+}
+.joint-details {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 100%;
+  z-index: 7;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  padding: 6px;
+  background: #0a1320;
+  border: 1px solid var(--mine-border);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+.joint-details > div {
+  padding: 4px;
+  background: #0e1a29;
+}
+.joint-details span {
+  display: block;
+  font: 6px var(--mine-mono);
+  color: var(--mine-blue);
+}
+.joint-details strong {
+  display: block;
+  font: 8px var(--mine-mono);
+}
+.joint-details i {
+  display: block;
+  height: 2px;
+  background: #1a2b3d;
+  margin-top: 3px;
+}
+.joint-details i b {
+  display: block;
+  height: 100%;
+  background: var(--mine-cyan);
+}
+.runtime-card,
+.device-card {
+  display: flex;
+  flex-direction: column;
+}
+.runtime-top {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+.runtime-top > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 4px;
+  background: #0a1420;
+  padding: 5px;
+}
+.runtime-top svg {
+  grid-row: 1/3;
+  color: var(--mine-blue);
+}
+.runtime-top span,
+.runtime-info span {
+  font-size: 6px;
+  color: var(--mine-muted);
+}
+.runtime-top strong {
+  font: 600 11px var(--mine-mono);
+}
+.runtime-top small {
+  font-size: 6px;
+  color: var(--mine-muted);
+}
+.runtime-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 4px;
+}
+.runtime-info > div {
+  background: rgba(8, 15, 24, 0.55);
+  padding: 4px 5px;
+  min-width: 0;
+}
+.runtime-info .wide {
+  grid-column: 1/-1;
+}
+.runtime-info strong {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.runtime-info svg {
+  color: var(--mine-cyan);
+}
+.runtime-progress {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+}
+.runtime-progress > span {
+  font-size: 6px;
+  color: var(--mine-muted);
+}
+.runtime-progress > i {
+  height: 3px;
+  background: #1a2b3d;
+}
+.runtime-progress > i b {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--mine-blue), var(--mine-cyan));
+}
+.runtime-progress > strong {
+  font: 8px var(--mine-mono);
+  color: var(--mine-cyan);
+}
+.runtime-progress > em {
+  font: normal 6px var(--mine-mono);
+  color: var(--mine-green);
+}
+.device-scroller {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(95px, 1fr));
+  gap: 3px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.device-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  background: #0a1420;
+  border: 1px solid rgba(83, 156, 255, 0.12);
+}
+.device-item > svg {
+  color: var(--mine-blue);
+}
+.device-item strong {
+  font-size: 7px;
+  display: block;
+  white-space: nowrap;
+}
+.device-item span {
+  font: 6px var(--mine-mono);
+  color: var(--mine-muted);
+  display: block;
+  white-space: nowrap;
+}
+.device-item > i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mine-dim);
+}
+.device-item.online > i {
+  background: var(--mine-green);
+  box-shadow: 0 0 5px rgba(57, 217, 138, 0.5);
+}
+.device-item.error > i {
+  background: var(--mine-red);
+}
+.log-card {
+  display: flex;
+  flex-direction: column;
+}
+.log-search {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--mine-border);
+  background: #08111c;
+  padding: 4px;
+}
+.log-search > svg {
+  color: var(--mine-muted);
+}
+.log-search input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 8px;
+}
+.log-search button {
+  height: 21px;
+  border: 1px solid rgba(83, 156, 255, 0.16);
+  background: #0d1825;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 6.5px;
+  cursor: pointer;
+}
+.log-filters {
+  display: flex;
+  gap: 2px;
+  margin: 5px 0;
+}
+.log-filters button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--mine-muted);
+  padding: 3px 5px;
+  font: 6.5px var(--mine-mono);
+  cursor: pointer;
+}
+.log-filters button.active {
+  border-color: var(--mine-blue);
+  color: var(--mine-blue);
+  background: rgba(55, 167, 255, 0.07);
+}
+.log-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #294762 transparent;
+}
+.log-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 54px 47px 1fr auto;
+  align-items: center;
+  gap: 5px;
+  min-height: 25px;
+  border: 0;
+  border-bottom: 1px solid rgba(83, 156, 255, 0.09);
+  background: transparent;
+  text-align: left;
+  padding: 3px 2px;
+  cursor: default;
+}
+.log-row time {
+  font: 6.5px var(--mine-mono);
+  color: var(--mine-muted);
+}
+.log-row b {
+  font: 600 6.5px var(--mine-mono);
+  color: var(--mine-blue);
+}
+.log-row span {
+  font-size: 7.5px;
+  color: #b8c8d8;
+}
+.log-row.success b {
+  color: var(--mine-green);
+}
+.log-row.action b {
+  color: var(--mine-cyan);
+}
+.log-row.warning b {
+  color: var(--mine-orange);
+}
+.log-row.error {
+  background: rgba(255, 91, 110, 0.05);
+  cursor: pointer;
+}
+.log-row.error b {
+  color: var(--mine-red);
+}
+.log-empty {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--mine-dim);
+  font-size: 8px;
+}
+.log-details {
+  position: absolute;
+  inset: 42px 10px 10px;
+  background: #0b1320;
+  border: 1px solid rgba(255, 91, 110, 0.45);
+  padding: 10px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.log-details > button {
+  position: absolute;
+  right: 6px;
+  top: 5px;
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+.log-details > span {
+  font-size: 7px;
+  color: var(--mine-red);
+}
+.log-details > strong {
+  font-size: 9px;
+}
+.log-details pre {
+  font: 7px var(--mine-mono);
+  color: var(--mine-muted);
+  white-space: pre-wrap;
+}
+.min-width-warning {
+  display: none;
+}
+.mining-shell ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.mining-shell ::-webkit-scrollbar-thumb {
+  background: #294762;
+}
+@media (max-width: 1500px) {
+  .mining-shell {
+    grid-template-rows: 58px 64px minmax(0, 1fr);
+    gap: 6px;
+    padding: 6px;
+  }
+  .mine-header {
+    padding: 5px 8px;
+    gap: 10px;
+  }
+  .mine-brand {
+    min-width: 0;
+  }
+  .mine-brand h1 {
+    font-size: 15px;
+  }
+  .product-nav {
+    padding-left: 7px;
+  }
+  .header-status {
+    min-width: 125px;
+    height: 38px;
+    padding: 4px 7px;
+  }
+  .mining-main-grid,
+  .mining-left,
+  .mining-center,
+  .mining-right,
+  .mining-visual-row,
+  .mining-info-row {
+    gap: 6px;
+  }
+  .mining-main-grid {
+    --content-gap: 6px;
+    --robot-status-height: 98px;
+    --mining-info-height: 174px;
+    grid-template-columns: 280px repeat(3, minmax(0, 1fr));
+  }
+  .mining-left {
+    grid-template-rows: 166px minmax(0, 1fr);
+  }
+  .mining-center { grid-template-rows: minmax(230px, 1fr) var(--robot-status-height) var(--mining-info-height); }
+  .mining-right { grid-template-rows: minmax(230px, 1fr) var(--robot-status-height) var(--mining-info-height); }
+  .mine-panel {
+    padding: 8px;
+  }
+  .workflow-prefix {
+    width: 125px;
+  }
+  .workflow-step {
+    min-width: 112px;
+  }
+  .workflow-message {
+    width: 210px;
+  }
+  .robot-metrics > div {
+    padding: 5px;
+  }
+  .connection-popover {
+    top: 52px;
+  }
+}
+@media (max-height: 820px) {
+  .mining-shell {
+    grid-template-rows: 54px 57px minmax(0, 1fr);
+  }
+  .mine-brand h1 {
+    font-size: 14px;
+  }
+  .mine-brand p {
+    font-size: 6.5px;
+  }
+  .header-status {
+    height: 34px;
+  }
+  .workflow-strip {
+    padding: 5px 9px;
+  }
+  .step-icon {
+    width: 27px;
+    height: 27px;
+  }
+  .workflow-step small {
+    display: none;
+  }
+  .mining-left {
+    grid-template-rows: 150px minmax(0, 1fr);
+  }
+  .mining-center {
+    --robot-status-height: 92px;
+    --mining-info-height: 162px;
+    grid-template-rows: minmax(215px, 1fr) var(--robot-status-height) var(--mining-info-height);
+  }
+  .mining-right {
+    --robot-status-height: 92px;
+    --mining-info-height: 162px;
+    grid-template-rows: minmax(215px, 1fr) var(--robot-status-height) var(--mining-info-height);
+  }
+  .mine-panel {
+    padding: 7px;
+  }
+  .mine-panel-head {
+    margin-bottom: 4px;
+  }
+  .mine-panel-head h2 {
+    font-size: 10px;
+  }
+  .command-actions {
+    margin-top: 3px;
+  }
+  .demo-controls {
+    margin-top: 3px;
+  }
+  .parent-row {
+    padding: 4px;
+  }
+  .child-task {
+    padding: 3px 4px;
+  }
+  .camera-tabs {
+    margin-bottom: 2px;
+  }
+  .robot-metrics > div {
+    padding: 4px;
+  }
+  .runtime-top > div {
+    padding: 3px;
+  }
+  .device-item {
+    padding: 3px;
+  }
+  .log-filters {
+    margin: 3px 0;
+  }
+  .log-row {
+    min-height: 20px;
+  }
+  .twin-toolbar {
+    top: 42px;
+  }
+  .connection-popover {
+    top: 49px;
+  }
+}
+/* Large-screen readability: keep panel geometry stable while increasing every text tier. */
+.mine-brand h1 { font-size: 20px; }
+.mine-brand p { font-size: 9px; }
+.product-nav a { font-size: 11px; }
+.header-status span { font-size: 9px; }
+.header-status strong { font-size: 12px; }
+.clock-value { font-size: 11px !important; }
+.connection-popover > div { font-size: 10px; }
+.connection-popover strong, .connection-popover small { font-size: 9px; }
+.workflow-prefix span, .mine-panel-head span { font-size: 9px; }
+.workflow-prefix strong { font-size: 13px; }
+.workflow-step b { font-size: 8px; }
+.workflow-step strong { font-size: 12px; }
+.workflow-step small { font-size: 8px; }
+.workflow-message span { font-size: 9px; }
+.workflow-message strong { font-size: 10px; }
+.workflow-message em { font-size: 20px; }
+.mine-panel-head h2 { font-size: 14px; }
+.mine-panel-head > em, .task-total, .log-count, .head-state { font-size: 9px; }
+.command-input-wrap textarea { font-size: 12px; }
+.send-command { font-size: 11px; }
+.command-actions span, .command-feedback { font-size: 8px; }
+.demo-controls button, .demo-controls label, .demo-controls select { font-size: 9px; }
+.safety-note { font-size: 8px; }
+.plan-summary strong { font-size: 11px; }
+.plan-summary span { font-size: 9px; }
+.plan-summary em { font-size: 15px; }
+.plan-empty { font-size: 10px; }
+.parent-row > b { font-size: 13px; }
+.parent-row strong { font-size: 11px; }
+.parent-row div span { font-size: 8px; }
+.child-task > b { font-size: 9px; }
+.child-task strong { font-size: 10px; }
+.child-task div span { font-size: 8px; }
+.child-task > em { font-size: 9px; }
+.twin-toolbar button { font-size: 9px; }
+.twin-caption { font-size: 9px; }
+.twin-caption strong { font-size: 10px; }
+.camera-tabs button { font-size: 9px; }
+.camera-meta, .mine-wall { font-size: 8px; }
+.controller-state, .robot-status-tools button { font-size: 9px; }
+.robot-metrics span { font-size: 8px; }
+.robot-metrics strong { font-size: 11px; }
+.robot-metrics small { font-size: 8px; }
+.joint-details span { font-size: 8px; }
+.joint-details strong { font-size: 10px; }
+.runtime-top span, .runtime-info span { font-size: 8px; }
+.runtime-top strong { font-size: 13px; }
+.runtime-top small { font-size: 8px; }
+.runtime-info strong { font-size: 9px; }
+.runtime-progress > span, .runtime-progress > em { font-size: 8px; }
+.runtime-progress > strong { font-size: 10px; }
+.device-item strong { font-size: 9px; }
+.device-item span { font-size: 8px; }
+.log-search input { font-size: 10px; }
+.log-search button, .log-filters button { font-size: 8px; }
+.log-row time, .log-row b { font-size: 8px; }
+.log-row span { font-size: 10px; }
+.log-empty { font-size: 10px; }
+.log-details > span { font-size: 9px; }
+.log-details > strong { font-size: 11px; }
+.log-details pre { font-size: 9px; }
+
+@media (max-width: 1279px) {
+  .min-width-warning {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: #060a10;
+    color: var(--mine-text);
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .mining-shell > *:not(.min-width-warning) {
+    visibility: hidden;
+  }
+}
