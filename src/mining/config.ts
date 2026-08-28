@@ -22,16 +22,23 @@ export const miningTopics = Object.freeze({
   workflow: env.VITE_TOPIC_WORKFLOW_STATE ?? '/embodied_brain/workflow_state',
   taskPlan: env.VITE_TOPIC_TASK_PLAN ?? '/embodied_brain/task_plan',
   taskState: env.VITE_TOPIC_MINING_TASK_STATE ?? '/embodied_brain/task_state',
+  robotStatus: env.VITE_TOPIC_ROBOT_STATUS ?? '/robot/status',
+  plannedPath: env.VITE_TOPIC_PLANNED_PATH ?? '/embodied_brain/planned_path',
   detections: env.VITE_TOPIC_DETECTED_OBJECTS ?? '/detected_objects',
   devices: env.VITE_TOPIC_DEVICE_STATUS ?? '/system/device_status',
   events: env.VITE_TOPIC_EXECUTION_EVENTS ?? '/embodied_brain/events',
   command: env.VITE_TOPIC_MINING_COMMAND ?? '/embodied_brain/command',
+  actionTrigger: env.VITE_TOPIC_ACTION_TRIGGER ?? '/embodied_brain/action_trigger',
+  safetyViolation: env.VITE_TOPIC_SAFETY_VIOLATION ?? '/person_detector_realsense_d455/safety_violation',
+  safetyStop: env.VITE_TOPIC_SAFETY_STOP ?? '/person_detector_realsense_d455/stop',
 })
 
 export const miningMessageTypes = Object.freeze(miningConfig.rosVersion === 1 ? {
   string: 'std_msgs/String',
+  bool: 'std_msgs/Bool',
   jointState: 'sensor_msgs/JointState',
 } : {
   string: 'std_msgs/msg/String',
+  bool: 'std_msgs/msg/Bool',
   jointState: 'sensor_msgs/msg/JointState',
 })

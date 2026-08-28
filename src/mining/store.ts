@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { miningConfig } from './config'
-import type { Detection, DeviceStatus, ExecutionEvent, MiningPoint, RobotTelemetry, TaskNode, WorkflowState } from './types'
+import type { Detection, DeviceStatus, ExecutionEvent, MiningPoint, RobotTelemetry, TaskNode, TaskRuntimeState, WorkflowState } from './types'
 
 const jointNames = Array.from({ length: 7 }, (_, index) => `fr3_joint${index + 1}`)
 const robotInitial = (): RobotTelemetry => ({
@@ -11,10 +11,15 @@ const robotInitial = (): RobotTelemetry => ({
 })
 
 const workflowInitial = (): WorkflowState => ({ taskId: '', command: '', stage: 'IDLE', progress: 0, message: '等待下达作业指令', decisionReasons: [], updatedAt: Date.now() })
+const runtimeInitial = (): TaskRuntimeState => ({
+  taskId: '', elapsedMs: 0, totalTaskCount: 0, completedTaskCount: 0, remainingTaskCount: 0,
+  overallProgress: 0, lastActionResult: '—', decisionReasons: [], running: false, updatedAt: Date.now(),
+})
 
 export const useMiningStore = defineStore('miningBrain', {
   state: () => ({
     workflow: workflowInitial(),
+    runtime: runtimeInitial(),
     tasks: [] as TaskNode[],
     robot: robotInitial(),
     detections: [] as Detection[],
@@ -27,12 +32,15 @@ export const useMiningStore = defineStore('miningBrain', {
     running: false,
     mode: miningConfig.mode,
     lastActionResult: '—',
+    taskPlanExpandRequest: 0,
+    safetyViolation: false,
   }),
   getters: {
     currentTask(state): TaskNode | undefined {
       return state.tasks.flatMap((task) => task.children ?? []).find((task) => task.id === state.workflow.currentTaskId)
     },
     remainingTasks(state): number {
+      if (state.mode === 'ros' && state.runtime.taskId) return state.runtime.remainingTaskCount
       return state.tasks.flatMap((task) => task.children ?? []).filter((task) => !['COMPLETED', 'SKIPPED'].includes(task.status)).length
     },
   },
@@ -41,9 +49,24 @@ export const useMiningStore = defineStore('miningBrain', {
       this.events.push({ ...event, id: `${Date.now()}-${this.events.length}`, timestamp: Date.now() })
       if (this.events.length > miningConfig.maxLogCount) this.events.splice(0, this.events.length - miningConfig.maxLogCount)
     },
+    addReceivedEvent(event: ExecutionEvent) {
+      if (this.events.some((item) => item.id === event.id)) return
+      this.events.push(event)
+      if (this.events.length > miningConfig.maxLogCount) this.events.splice(0, this.events.length - miningConfig.maxLogCount)
+    },
+    setPlannedPath(points: MiningPoint[]) {
+      this.plannedPath = points; this.executedPath = []
+    },
+    appendExecutedPoint(point: MiningPoint) {
+      const previous=this.executedPath.at(-1)
+      if(previous&&Math.hypot(previous.x-point.x,previous.y-point.y,previous.z-point.z)<.003)return
+      this.executedPath.push(point)
+      if(this.executedPath.length>800)this.executedPath.splice(0,this.executedPath.length-800)
+    },
+    setSafetyViolation(active: boolean) { this.safetyViolation = active },
     resetState() {
-      this.workflow = workflowInitial(); this.tasks = []; this.robot = robotInitial(); this.detections = []
-      this.events = []; this.plannedPath = []; this.executedPath = []; this.running = false; this.lastActionResult = '—'
+      this.workflow = workflowInitial(); this.runtime = runtimeInitial(); this.tasks = []; this.robot = robotInitial(); this.detections = []
+      this.events = []; this.plannedPath = []; this.executedPath = []; this.running = false; this.lastActionResult = '—'; this.safetyViolation = false
     },
   },
 })

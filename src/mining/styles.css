@@ -409,7 +409,7 @@
 }
 .mining-info-row {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   min-height: 0;
 }
@@ -1084,6 +1084,47 @@
   font-size: 6px;
   color: var(--mine-muted);
 }
+.robot-live-joints {
+  display: grid;
+  grid-template-columns: auto repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  align-items: stretch;
+  margin-top: 4px;
+}
+.robot-live-joints > :is(span, h6) {
+  display: grid;
+  align-items: center;
+  margin: 0;
+  padding: 5px 5px;
+  color: var(--mine-muted);
+  font-size: 7px;
+  white-space: nowrap;
+  background: rgba(7, 14, 23, 0.58);
+  border: 1px solid rgba(83, 156, 255, 0.14);
+}
+.robot-live-joints > div {
+  min-width: 0;
+  padding: 3px 4px;
+  background: rgba(7, 14, 23, 0.58);
+  border: 1px solid rgba(83, 156, 255, 0.14);
+}
+.robot-live-joints b,
+.robot-live-joints strong {
+  display: block;
+  font-family: var(--mine-mono);
+}
+.robot-live-joints b {
+  color: var(--mine-blue);
+  font-size: 7px;
+}
+.robot-live-joints strong {
+  margin-top: 1px;
+  overflow: hidden;
+  color: var(--mine-text);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .joint-details {
   position: absolute;
   left: 10px;
@@ -1395,6 +1436,36 @@
 .min-width-warning {
   display: none;
 }
+.safety-violation-dialog {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 6, 11, .82);
+  backdrop-filter: blur(5px);
+}
+.safety-violation-card {
+  width: min(650px, 88vw);
+  padding: 46px 48px 40px;
+  text-align: center;
+  border: 2px solid var(--mine-red);
+  background: linear-gradient(145deg, #27131b, #0c121c 60%);
+  box-shadow: 0 0 0 7px rgba(255, 91, 110, .08), 0 0 65px rgba(255, 91, 110, .32);
+}
+.safety-violation-card > svg { color: var(--mine-red); filter: drop-shadow(0 0 10px rgba(255, 91, 110, .7)); }
+.safety-violation-card p { margin: 13px 0 5px; color: #ff9ba7; font: 700 13px var(--mine-mono); letter-spacing: .14em; }
+.safety-violation-card h2 { margin: 0; font-size: 28px; letter-spacing: .05em; }
+.safety-violation-card > strong { display: block; margin-top: 10px; color: var(--mine-muted); font-size: 15px; font-weight: 500; }
+.safety-choices { display: flex; justify-content: center; gap: 62px; margin: 36px 0 22px; }
+.safety-choice { width: 144px; height: 144px; border-radius: 50%; display: grid; place-content: center; gap: 8px; cursor: pointer; color: var(--mine-text); transition: transform .16s ease, box-shadow .16s ease; }
+.safety-choice span { font-size: 24px; font-weight: 700; }
+.safety-choice:hover:not(:disabled) { transform: translateY(-4px) scale(1.03); }
+.safety-choice:disabled { opacity: .5; cursor: wait; }
+.safety-choice.remote { border: 2px solid var(--mine-orange); background: rgba(255, 184, 77, .13); box-shadow: 0 0 22px rgba(255, 184, 77, .2); color: #ffcf87; }
+.safety-choice.resume { border: 2px solid var(--mine-cyan); background: rgba(46, 230, 214, .12); box-shadow: 0 0 22px rgba(46, 230, 214, .2); color: var(--mine-cyan); }
+.safety-violation-card > small { color: var(--mine-muted); font-size: 13px; }
+.safety-violation-card > small.error { color: var(--mine-red); }
 .mining-shell ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -1591,7 +1662,10 @@
 .robot-metrics strong { font-size: 11px; }
 .robot-metrics small { font-size: 8px; }
 .joint-details span { font-size: 8px; }
-.joint-details strong { font-size: 10px; }
+.joint-details strong { font-size: 12px; }
+.robot-live-joints > :is(span, h6) { font-size: 11px; }
+.robot-live-joints b { font-size: 10px; }
+.robot-live-joints strong { font-size: 15px; }
 .runtime-top span, .runtime-info span { font-size: 8px; }
 .runtime-top strong { font-size: 13px; }
 .runtime-top small { font-size: 8px; }

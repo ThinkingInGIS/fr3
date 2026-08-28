@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import URDFLoader, { type URDFRobot } from 'urdf-loader'
 import { SimplifiedFr3 } from '@/three/robotModel'
-import { rosToThree } from '@/three/rosCoordinates'
 import type { MiningPoint, RobotTelemetry } from './types'
 
 export type MiningView = 'default' | 'top' | 'front' | 'side'
@@ -33,12 +32,14 @@ export class MiningSceneManager {
   private urRobot?: URDFRobot
   private latestTelemetry?: RobotTelemetry
   private environment = new THREE.Group()
+  // ROS REP-103 (x forward, y left, z up) -> Three.js (x right, y up, z toward viewer).
+  // Robot and paths are both children of this frame, whose origin is ROS base_link.
+  private rosFrame = new THREE.Group()
   private pathGroup = new THREE.Group()
   private plannedLine?: THREE.Line
   private executedLine?: THREE.Line
   private previewMarker = new THREE.Mesh(new THREE.SphereGeometry(.014, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffb84d }))
   private pickPlaceCurve = new THREE.CatmullRomCurve3([sourcePosition,liftPosition,transferPosition,placePosition])
-  private demoPathLine?: THREE.Line
   private workpiece?: THREE.Mesh<THREE.CylinderGeometry,THREE.MeshStandardMaterial>
   private graspIndicator = new THREE.Mesh(new THREE.TorusGeometry(.038,.004,8,24),new THREE.MeshBasicMaterial({color:0xffb84d,transparent:true,opacity:.9}))
   private previewing = false
@@ -100,22 +101,17 @@ export class MiningSceneManager {
     this.scene.add(new THREE.AmbientLight(0x8fb7d3, .85))
     const key = new THREE.DirectionalLight(0xe5f4ff, 4.3); key.position.set(1.2, 1.8, -1.1); this.scene.add(key)
     const fill = new THREE.DirectionalLight(0x65bfff, 2.1); fill.position.set(-1.1, .85, .9); this.scene.add(fill)
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.7), new THREE.MeshStandardMaterial({ color: 0x101722, roughness: .86, metalness: .1 })); floor.rotation.x = -Math.PI / 2; this.environment.add(floor)
     const grid = new THREE.GridHelper(2.4, 24, 0x254969, 0x17283a); grid.position.y = .002; this.environment.add(grid)
-    const table = new THREE.Mesh(new THREE.BoxGeometry(1.25,.075,.76), new THREE.MeshStandardMaterial({color:0x1c2a38,roughness:.55,metalness:.35})); table.position.set(.02,.04,-.12); this.environment.add(table)
-    const zone = (x:number,color:number) => { const mesh = new THREE.Mesh(new THREE.PlaneGeometry(.46,.52),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.09,side:THREE.DoubleSide})); mesh.rotation.x=-Math.PI/2;mesh.position.set(x,.081,-.12); const edge=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry),new THREE.LineBasicMaterial({color,transparent:true,opacity:.75}));mesh.add(edge);return mesh }
-    this.environment.add(zone(-.28,0x37a7ff),zone(.35,0xffb84d))
-    const rodMaterial = new THREE.MeshStandardMaterial({color:0x6b879d,metalness:.72,roughness:.25}); const resinMaterial = new THREE.MeshStandardMaterial({color:0xe0a53e,roughness:.38}); const boltMaterial = new THREE.MeshStandardMaterial({color:0x43d6c6,metalness:.6,roughness:.3})
-    const rod = new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.45,18),rodMaterial); rod.rotation.z=Math.PI/2;rod.position.copy(sourcePosition);this.workpiece=rod
-    const resin = new THREE.Mesh(new THREE.CylinderGeometry(.026,.026,.22,18),resinMaterial); resin.rotation.z=Math.PI/2;resin.position.set(-.25,.12,.02)
-    const bolt = new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.52,14),boltMaterial); bolt.rotation.z=Math.PI/2;bolt.position.set(-.23,.12,-.03)
-    this.environment.add(rod,resin,bolt); this.scene.add(this.environment)
-    this.fallbackRobot.group.position.set(.36,.08,.18); this.fallbackRobot.group.scale.setScalar(.72); this.scene.add(this.fallbackRobot.group)
-    this.graspIndicator.rotation.y=Math.PI/2;this.graspIndicator.visible=false;this.environment.add(this.graspIndicator)
-    const demoGeometry=new THREE.BufferGeometry().setFromPoints(this.pickPlaceCurve.getPoints(56)),demoMaterial=new THREE.LineDashedMaterial({color:0x37a7ff,dashSize:.035,gapSize:.018,transparent:true,opacity:.78})
-    this.demoPathLine=new THREE.Line(demoGeometry,demoMaterial);this.demoPathLine.computeLineDistances();this.pathGroup.add(this.demoPathLine)
-    this.previewMarker.visible=false; this.pathGroup.add(this.previewMarker); this.scene.add(this.pathGroup)
-    const axes=new THREE.AxesHelper(.1);axes.position.set(.48,.2,-.25);this.environment.add(axes)
+    this.scene.add(this.environment)
+    this.rosFrame.setRotationFromMatrix(new THREE.Matrix4().set(
+      0, -1, 0, 0,
+      0, 0, 1, 0,
+      -1, 0, 0, 0,
+      0, 0, 0, 1,
+    ))
+    this.rosFrame.add(this.fallbackRobot.group)
+    this.previewMarker.visible=false; this.pathGroup.add(this.previewMarker); this.rosFrame.add(this.pathGroup)
+    this.scene.add(this.rosFrame)
   }
 
   private loadUr12e() {
@@ -123,13 +119,15 @@ export class MiningSceneManager {
     const loader=new URDFLoader()
     loader.packages={ur_description:'/ur_description'}
     loader.load('/ur_description/urdf/ur12e.urdf',robot=>{
-      robot.rotation.x=-Math.PI/2
-      robot.position.set(.36,.08,.18)
-      robot.scale.setScalar(.58)
+      // URDF dimensions and planned/executed points are both expressed in metres
+      // relative to base_link. Do not add display-only offsets or scaling here.
+      robot.position.set(0,0,0)
+      robot.rotation.set(0,0,0)
+      robot.scale.setScalar(1)
       robot.traverse(object=>{if(object instanceof THREE.Mesh){object.castShadow=true;object.receiveShadow=true}})
-      this.scene.remove(this.fallbackRobot.group)
+      this.rosFrame.remove(this.fallbackRobot.group)
       this.urRobot=robot
-      this.scene.add(robot)
+      this.rosFrame.add(robot)
       if(this.latestTelemetry)this.updateRobot(this.latestTelemetry)
       this.onRobotModelState?.('ready')
     },undefined,()=>this.onRobotModelState?.('error'))
@@ -138,7 +136,8 @@ export class MiningSceneManager {
   private replaceLine(current: THREE.Line | undefined, points: MiningPoint[], dashed: boolean, color: number) {
     if (current) { this.pathGroup.remove(current); current.geometry.dispose(); (current.material as THREE.Material).dispose() }
     if (points.length < 2) return undefined
-    const curve = new THREE.CatmullRomCurve3(points.map(rosToThree)), geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(56))
+    const rosPoints=points.map(({x,y,z})=>new THREE.Vector3(x,y,z))
+    const geometry = new THREE.BufferGeometry().setFromPoints(dashed?new THREE.CatmullRomCurve3(rosPoints).getPoints(56):rosPoints)
     const material = dashed ? new THREE.LineDashedMaterial({color,dashSize:.035,gapSize:.018,transparent:true,opacity:.85}) : new THREE.LineBasicMaterial({color,transparent:true,opacity:.95})
     const line = new THREE.Line(geometry,material); if (dashed) line.computeLineDistances(); this.pathGroup.add(line); return line
   }
@@ -180,7 +179,6 @@ export class MiningSceneManager {
     this.frame=requestAnimationFrame(this.render);this.controls.update();const t=this.clock.getElapsedTime()
     if(this.previewing)this.updatePickPlace(t)
     if(this.plannedLine)(this.plannedLine.material as THREE.LineDashedMaterial).opacity=.68+Math.sin(t*3)*.16
-    if(this.demoPathLine)(this.demoPathLine.material as THREE.LineDashedMaterial).opacity=.56+Math.sin(t*3)*.14
     this.renderer.render(this.scene,this.camera)
   }
 }

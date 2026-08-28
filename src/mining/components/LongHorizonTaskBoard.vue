@@ -6,13 +6,14 @@ import type { TaskNodeStatus } from '../types'
 
 const store=useMiningStore(),list=ref<HTMLElement>(),collapsed=ref(new Set<string>())
 watch(()=>store.workflow.currentTaskId,async(id)=>{if(!id)return;await nextTick();list.value?.querySelector(`[data-task="${id}"]`)?.scrollIntoView({block:'nearest',behavior:'smooth'})})
+watch(()=>store.taskPlanExpandRequest,()=>{collapsed.value=new Set<string>()})
 const total=computed(()=>store.tasks.reduce((sum,parent)=>sum+(parent.children?.length??0),0)),done=computed(()=>store.tasks.flatMap(t=>t.children??[]).filter(t=>t.status==='COMPLETED').length)
 const iconFor=(status:TaskNodeStatus)=>status==='COMPLETED'?Check:status==='RUNNING'?Clock3:status==='PAUSED'?Pause:status==='FAILED'?X:Circle
 </script>
 
 <template>
   <section class="mine-panel task-board">
-    <div class="mine-panel-head"><div><h2>长程任务规划看板</h2></div><div class="task-total"><strong>{{ done }}</strong>/{{ total||9 }}</div></div>
+    <div class="mine-panel-head"><div><h2>长程任务规划</h2></div><div class="task-total"><strong>{{ done }}</strong>/{{ total||9 }}</div></div>
     <div class="plan-summary"><ListTree :size="15" /><div><strong>{{ store.tasks.length||3 }} 个父任务 · {{ total||9 }} 个子任务</strong><span>{{ store.workflow.recognizedIntent??'等待意图理解与计划生成' }}</span></div><em>{{ store.workflow.progress.toFixed(0) }}%</em></div>
     <div ref="list" class="task-tree">
       <div v-if="!store.tasks.length" class="plan-empty"><i /><i /><i /><span>发送指令后动态生成任务计划</span></div>

@@ -78,8 +78,15 @@ VITE_FR3_URDF_URL=/models/fr3/fr3.urdf
 
 
 -----------------------------------------------------------------------------
+0.启动ros bridge
 
-1.启动d405摄像头图像server
+source rc.d/ros-teleop2.env
+roslaunch rosbridge_server rosbridge_websocket.launch   address:=0.0.0.0   port:=9090
+
+
+1.启动摄像头图像server
+
+source rc.d/ros-teleop2.env
 
 rosrun web_video_server web_video_server _port:=8081 _address:=0.0.0.0  _server_threads:=2
 
@@ -97,6 +104,59 @@ source devel/setup.bash
 
 roslaunch pose_control_19 ur_touch_haptic_teleop_pose.launch
 
+-----------------------------------------------------------------------------
+
+### 轨迹录制节点 新建终端
+source rc.d/ros-teleop2.env
+cd ws_touch/
+source devel/setup.bash
+roslaunch pose_control_19 teach_trajectory_replay.launch \
+  speed_scale:=1.0 \
+  enforce_replay_speed_limits:=false \
+  approach_linear_speed:=0.2 \
+  approach_angular_speed:=1.5
+
+### 开始录制服务 新建终端
+source rc.d/ros-teleop2.env
+cd ws_touch/
+source devel/setup.bash
+rosservice call /teach_trajectory_replay/set_record_file "{file_path: 'demo_pick_01'}"
+rosservice call /teach_trajectory_replay/start_recording "{}"
+rosservice call /teach_trajectory_replay/stop_recording "{}"
+
+### 夹爪 新建终端
+source rc.d/ros-teleop2.env
+cd ws_touch/
+source devel/setup.bash
+rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py
 
 
-页面布局做如下调整：1.将"煤矿机器人具身智能作业大脑"标题居中显示；2.UR12e机械臂运动轨迹规划、D405手腕相机、全局摄像头检测画面 三个容器的宽度设置为一致，等分。
+### 播放录制文件
+rosservice call /teach_trajectory_replay/set_replay_file  "{file_path: 'demo_pick_01'}"
+
+rosservice call /teach_trajectory_replay/play "{}" 
+
+
+
+## 启动机械臂监听
+source rc.d/ros-teleop2.env
+cd ws_touch/
+source devel/setup.bash
+roslaunch pose_control_19 teach_trajectory_sequence.launch
+
+
+在机械臂运动轨迹规划窗口，当前的设计是规划路径和执行路径用虚线和实线进行表达，请将这个功能加入进来，且实施路径是随着机械臂的运动动态刷新的
+
+## 启动轨迹规划桥点
+source /opt/ros/noetic/setup.bash
+source /home/w/embodied_ws/devel/setup.bash
+
+rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
+  _base_frame:=base_link \
+  _tool_frame:=tool0 \
+  _trajectory_directory:=/home/w/.ros/pose_control_19/trajectories \
+  _yaml_path_stride:=5
+
+
+增加一个功能：监听名为/person_detector_realsense_d455/safety_violation的rostopic，类型为std_msgs/Bool，当收到消息为true时，页面弹出一个大的消息框，同时页面有两个大的圆形按钮，一个显示文字“遥操”，另一个显示文字“继续”，当点击遥操按钮则向rostopic为/person_detector_realsense_d455/stop（类型std_msgs/Bool）发送true，点击继续则发送false
+

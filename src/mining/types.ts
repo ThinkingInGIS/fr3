@@ -33,6 +33,24 @@ export interface WorkflowState {
   planningDurationMs?: number
 }
 
+export interface TaskRuntimeState {
+  taskId: string
+  currentTaskId?: string
+  currentTaskTitle?: string
+  currentObjectId?: string
+  startedAt?: number
+  elapsedMs: number
+  planningDurationMs?: number
+  totalTaskCount: number
+  completedTaskCount: number
+  remainingTaskCount: number
+  overallProgress: number
+  lastActionResult: string
+  decisionReasons: string[]
+  running: boolean
+  updatedAt: number
+}
+
 export interface RobotTelemetry {
   timestamp: number
   jointNames: string[]

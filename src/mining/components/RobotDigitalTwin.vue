@@ -19,7 +19,7 @@ const previewActive=computed(()=>!['idle','complete'].includes(previewState.valu
 
 <template>
   <section class="mine-panel twin-card">
-    <div class="mine-panel-head overlay-head"><div><h2>UR12e 机械臂运动轨迹规划</h2></div><div class="head-state"><i :class="{mock:modelState==='error'}" />{{ modelState==='ready'?'URDF 已加载':modelState==='error'?'简化模型':'URDF 加载中' }}</div></div>
+    <div class="mine-panel-head overlay-head"><div><h2>作业规划</h2></div><div class="head-state"><i :class="{mock:modelState==='error'}" />{{ modelState==='ready'?'URDF 已加载':modelState==='error'?'简化模型':'URDF 加载中' }}</div></div>
     <div ref="host" class="mine-twin-host" />
     <div class="twin-toolbar">
       <button title="自由视角" @click="view('default')"><Rotate3D :size="13" />自由</button><button @click="view('top')">俯视</button><button @click="view('front')">正视</button><button @click="view('side')">侧视</button>

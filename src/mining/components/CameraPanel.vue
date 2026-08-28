@@ -13,6 +13,7 @@ const url=computed(()=>{
 })
 const live=computed(()=>store.mode==='ros'&&Boolean(url.value))
 const streamType=computed(()=>view.value==='DEPTH'?'DEPTH':'RGB')
+const cameraName=computed(()=>props.source==='GLOBAL'?'D455':'D405')
 </script>
 
 <template>
@@ -23,7 +24,7 @@ const streamType=computed(()=>view.value==='DEPTH'?'DEPTH':'RGB')
       <img v-if="live" :key="url" :src="url" :alt="`${title} ${streamType}`" />
       <div v-else :class="['mine-camera-mock',source.toLowerCase()]"><div class="mine-grid" /><template v-if="source==='GLOBAL'"><i class="material rod" /><i class="material resin" /><i class="material bolt" /><i class="safety-zone" /><span class="mine-wall">巷道钻锚作业区 · CAM-02</span></template><template v-else><i class="wrist-gripper left" /><i class="wrist-gripper right" /><i class="close-target" /></template></div>
       <MiningDetectionOverlay v-if="view==='AI'" :detections="items" />
-      <div class="camera-meta"><Radio :size="10" />D405 {{ streamType }} <span>MJPEG LIVE</span><span>{{ items.length }} TARGETS</span></div><button class="camera-expand" title="全屏查看"><Expand :size="13" /></button>
+      <div class="camera-meta"><Radio :size="10" />{{ cameraName }} {{ streamType }} <span>MJPEG LIVE</span><span>{{ items.length }} TARGETS</span></div><button class="camera-expand" title="全屏查看"><Expand :size="13" /></button>
     </div>
   </section>
 </template>

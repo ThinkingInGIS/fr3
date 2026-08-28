@@ -11,6 +11,7 @@ export interface MiningDataSource {
   disconnect(): void
   sendCommand(command: string): Promise<void>
   control(command: MiningCommand): Promise<void>
+  respondToSafetyViolation(stop: boolean): Promise<void>
   setSpeed(speed: number): void
 }
 
@@ -86,6 +87,12 @@ export class MiningMockDataSource implements MiningDataSource {
       const current = store.currentTask; if (current) current.status = 'FAILED'
       store.addEvent({ level: 'ERROR', stage: 'ERROR', taskId: store.workflow.currentTaskId, message: '模拟故障：MoveIt 规划场景同步超时', details: { recovery: '复位显示状态后重新发送指令' } })
     }
+  }
+
+  async respondToSafetyViolation(stop: boolean) {
+    const store = useMiningStore()
+    store.setSafetyViolation(false)
+    store.addEvent({ level: 'WARNING', stage: 'PAUSED', message: stop ? '已切换至遥操，已向安全停止话题发送 true' : '已确认继续作业，已向安全停止话题发送 false' })
   }
 
   setSpeed(speed: number) { this.speed = speed; useMiningStore().speed = speed }
@@ -170,7 +177,30 @@ export class MiningMockDataSource implements MiningDataSource {
   }
 }
 
-export const workflowSchema = z.object({ taskId: z.string(), command: z.string(), stage: z.enum(['IDLE','COMMAND','INTENT_UNDERSTANDING','TASK_PLANNING','TASK_EXECUTION','COMPLETED','PAUSED','ERROR']), progress: z.number(), message: z.string(), decisionReasons: z.array(z.string()), updatedAt: z.number() })
+const workflowStageSchema = z.enum(['IDLE','COMMAND','INTENT_UNDERSTANDING','TASK_PLANNING','TASK_EXECUTION','COMPLETED','PAUSED','ERROR'])
+export const workflowSchema = z.object({
+  taskId: z.string(), command: z.string(), recognizedIntent: z.string().optional(), stage: workflowStageSchema,
+  previousStage: workflowStageSchema.optional(), currentTaskId: z.string().optional(), currentObjectId: z.string().optional(),
+  progress: z.number().min(0).max(100), message: z.string(), decisionReasons: z.array(z.string()),
+  startedAt: z.number().optional(), updatedAt: z.number(), planningDurationMs: z.number().nonnegative().optional(),
+})
+export const taskRuntimeSchema = z.object({
+  taskId: z.string(), currentTaskId: z.string().optional(), currentTaskTitle: z.string().optional(), currentObjectId: z.string().optional(),
+  startedAt: z.number().optional(), elapsedMs: z.number().nonnegative(), planningDurationMs: z.number().nonnegative().optional(),
+  totalTaskCount: z.number().int().nonnegative(), completedTaskCount: z.number().int().nonnegative(), remainingTaskCount: z.number().int().nonnegative(),
+  overallProgress: z.number().min(0).max(100), lastActionResult: z.string(), decisionReasons: z.array(z.string()),
+  running: z.boolean(), updatedAt: z.number(),
+})
+export const robotStatusSchema = z.object({
+  timestamp: z.number(), controllerState: z.enum(['IDLE','PLANNING','EXECUTING','PAUSED','ERROR']),
+  tcpPosition: z.object({ x:z.number(), y:z.number(), z:z.number() }),
+  tcpOrientation: z.object({ x:z.number(), y:z.number(), z:z.number(), w:z.number() }),
+  tcpLinearSpeed: z.number().nonnegative(), tcpAngularSpeed: z.number().nonnegative(),
+  gripperWidth: z.number().nonnegative(), gripperForce: z.number().nonnegative(), gripperState: z.enum(['OPEN','CLOSED','GRASPING','ERROR']),
+  plannedProgress: z.number().min(0).max(100), executedProgress: z.number().min(0).max(100),
+})
+export const miningPointSchema = z.object({ x:z.number(), y:z.number(), z:z.number() })
+export const plannedPathSchema = z.array(miningPointSchema).min(2)
 const taskStatusSchema = z.enum(['PENDING','RUNNING','COMPLETED','SKIPPED','PAUSED','FAILED'])
 const taskNodeSchema: z.ZodType<TaskNode> = z.lazy(() => z.object({ id:z.string(),parentId:z.string().optional(),order:z.number(),title:z.string(),description:z.string().optional(),status:taskStatusSchema,progress:z.number(),startTime:z.number().optional(),endTime:z.number().optional(),durationMs:z.number().optional(),children:z.array(taskNodeSchema).optional() }))
 const detectionSchema: z.ZodType<Detection> = z.object({ id:z.string(),className:z.string(),confidence:z.number().min(0).max(1),source:z.enum(['WRIST','GLOBAL']),imageWidth:z.number().positive(),imageHeight:z.number().positive(),bbox:z.object({x:z.number(),y:z.number(),width:z.number(),height:z.number()}),selected:z.boolean(),state:z.enum(['VISIBLE','OCCLUDED','GRASPABLE','UNREACHABLE','HANDLED']) })
@@ -178,6 +208,13 @@ const deviceSchema: z.ZodType<DeviceStatus> = z.object({ id:z.string(),name:z.st
 const eventSchema = z.object({ id:z.string().optional(),timestamp:z.number().optional(),level:z.enum(['INFO','THINK','PLAN','VISION','ACTION','WARNING','ERROR','SUCCESS']),stage:z.enum(['IDLE','COMMAND','INTENT_UNDERSTANDING','TASK_PLANNING','TASK_EXECUTION','COMPLETED','PAUSED','ERROR']).optional(),taskId:z.string().optional(),message:z.string(),details:z.record(z.string(),z.unknown()).optional() })
 const parseStringJson = (message: unknown) => typeof message === 'object' && message !== null && 'data' in message ? JSON.parse(String((message as { data: unknown }).data)) : message
 export const adaptMiningWorkflow = (message: unknown): WorkflowState => workflowSchema.parse(parseStringJson(message)) as WorkflowState
+export const adaptTaskRuntime = (message: unknown) => taskRuntimeSchema.parse(parseStringJson(message))
+export const adaptRobotStatus = (message: unknown) => robotStatusSchema.parse(parseStringJson(message))
+export const createStartActionMessage = (command: string, requestId: string, requestedAt: number) => ({ event: 'START_ACTION', requestId, command, source: 'web-dashboard', requestedAt })
+export const isCompletedTaskPlan = (tasks: TaskNode[]) => {
+  const children=tasks.flatMap(task=>task.children??[])
+  return children.length>0&&children.every(task=>task.status==='COMPLETED')
+}
 
 type JointStateMessage = { name?:unknown;position?:unknown;velocity?:unknown;effort?:unknown }
 export const adaptJointState = (message: JointStateMessage) => {
@@ -194,9 +231,13 @@ export class MiningRosDataSource implements MiningDataSource {
   private client?: RosClient
   private subscriptions: ROSLIB.Topic[] = []
   private commandTopic?: ROSLIB.Topic
+  private actionTriggerTopic?: ROSLIB.Topic
+  private safetyStopTopic?: ROSLIB.Topic
+  private awaitingNewTask = true
+  private lastExecutedPathAt = 0
 
   connect() {
-    const store = useMiningStore(); store.connected = false
+    const store = useMiningStore(); store.resetState(); store.connected = false; this.awaitingNewTask = true
     this.client = new RosClient(miningConfig.rosbridgeUrl, (status) => {
       store.connected = status === 'online'
       if (status === 'online') this.subscribe()
@@ -204,25 +245,67 @@ export class MiningRosDataSource implements MiningDataSource {
   }
   disconnect() { this.subscriptions.forEach((topic) => topic.unsubscribe()); this.client?.disconnect() }
   async sendCommand(command: string) {
-    if (!this.commandTopic) throw new Error('ROS 尚未连接，指令未发送')
-    this.commandTopic.publish(new ROSLIB.Message({ data: command }))
+    if (!this.commandTopic || !this.actionTriggerTopic) throw new Error('ROS 尚未连接，指令未发送')
+    const trimmed=command.trim()
+    if (!trimmed) throw new Error('请输入作业指令')
+    const requestedAt=Date.now(),requestId=`web-${crypto.randomUUID()}`
+    this.awaitingNewTask=false
+    this.commandTopic.publish(new ROSLIB.Message({ data: trimmed }))
+    this.actionTriggerTopic.publish(new ROSLIB.Message({ data: JSON.stringify(createStartActionMessage(trimmed,requestId,requestedAt)) }))
   }
   async control(command: MiningCommand) {
     if (!this.commandTopic) throw new Error('ROS 尚未连接，控制请求未发送')
     this.commandTopic.publish(new ROSLIB.Message({ data: JSON.stringify({ command, requestedAt: Date.now() }) }))
   }
+  async respondToSafetyViolation(stop: boolean) {
+    if (!this.safetyStopTopic) throw new Error('ROS 尚未连接，安全控制请求未发送')
+    this.safetyStopTopic.publish(new ROSLIB.Message({ data: stop }))
+    const store=useMiningStore()
+    store.setSafetyViolation(false)
+    store.addEvent({ level: 'WARNING', stage: 'PAUSED', message: stop ? '安全违规：已请求遥操并发布停止信号' : '安全违规：已确认继续作业并解除停止信号' })
+  }
   setSpeed(speed: number) { useMiningStore().speed = speed }
   private subscribe() {
     const ros = this.client?.connection; if (!ros) return
     const store=useMiningStore()
+    this.subscriptions.forEach((topic)=>topic.unsubscribe());this.subscriptions=[]
     const subscribeJson=<T>(name:string,schema:z.ZodType<T>,apply:(value:T)=>void,label:string)=>{const topic=new ROSLIB.Topic({ros,name,messageType:miningMessageTypes.string,throttle_rate:80});topic.subscribe(message=>{try{apply(schema.parse(parseStringJson(message)))}catch(error){console.warn(`[Mining ROS] 已丢弃非法${label}消息`,error)}});this.subscriptions.push(topic)}
-    subscribeJson(miningTopics.workflow,workflowSchema,value=>{store.workflow=value as WorkflowState},'工作流')
-    subscribeJson(miningTopics.taskPlan,z.array(taskNodeSchema),value=>{store.tasks=value},'任务计划')
+    subscribeJson(miningTopics.workflow,workflowSchema,value=>{
+      if(this.awaitingNewTask&&value.stage==='COMPLETED')return
+      if(!['IDLE','COMPLETED'].includes(value.stage))this.awaitingNewTask=false
+      store.workflow=value as WorkflowState;store.running=!['IDLE','COMPLETED','ERROR'].includes(value.stage)
+    },'工作流')
+    subscribeJson(miningTopics.taskPlan,z.array(taskNodeSchema),value=>{
+      if(this.awaitingNewTask&&isCompletedTaskPlan(value))return
+      if(!isCompletedTaskPlan(value))this.awaitingNewTask=false
+      store.tasks=value
+    },'任务计划')
+    subscribeJson(miningTopics.taskState,taskRuntimeSchema,value=>{
+      if(this.awaitingNewTask&&!value.running&&value.overallProgress>=100)return
+      if(value.running||(value.taskId!==''&&value.overallProgress<100))this.awaitingNewTask=false
+      store.runtime=value;store.running=value.running;store.lastActionResult=value.lastActionResult
+    },'系统作业信息')
+    subscribeJson(miningTopics.robotStatus,robotStatusSchema,value=>{
+      Object.assign(store.robot,value)
+      if(value.controllerState==='EXECUTING'&&store.plannedPath.length>=2&&value.timestamp-this.lastExecutedPathAt>=50){
+        store.appendExecutedPoint(value.tcpPosition);this.lastExecutedPathAt=value.timestamp
+      }
+    },'机械臂状态')
+    subscribeJson(miningTopics.plannedPath,plannedPathSchema,value=>{store.setPlannedPath(value);this.lastExecutedPathAt=0},'规划路径')
     subscribeJson(miningTopics.detections,z.array(detectionSchema),value=>{store.detections=value},'检测结果')
     subscribeJson(miningTopics.devices,z.array(deviceSchema),value=>{store.devices=value},'设备状态')
-    subscribeJson(miningTopics.events,eventSchema,value=>{store.events.push({ ...value,id:value.id??crypto.randomUUID(),timestamp:value.timestamp??Date.now() })},'执行事件')
+    subscribeJson(miningTopics.events,eventSchema,value=>{store.addReceivedEvent({ ...value,id:value.id??crypto.randomUUID(),timestamp:value.timestamp??Date.now() })},'执行事件')
+    const safetyViolation=new ROSLIB.Topic({ros,name:miningTopics.safetyViolation,messageType:miningMessageTypes.bool})
+    safetyViolation.subscribe(message=>{
+      if ((message as { data?: unknown }).data !== true) return
+      store.setSafetyViolation(true)
+      store.addEvent({ level: 'ERROR', stage: 'PAUSED', message: '检测到人员安全违规，等待选择遥操或继续作业' })
+    })
+    this.subscriptions.push(safetyViolation)
     const joints=new ROSLIB.Topic({ros,name:miningTopics.joints,messageType:miningMessageTypes.jointState,throttle_rate:50});joints.subscribe(message=>{try{const data=adaptJointState(message as JointStateMessage);store.robot.jointNames=data.names;store.robot.jointPosition=data.positions;store.robot.jointVelocity=data.velocities;store.robot.jointEffort=data.efforts;store.robot.controllerState=data.velocities.some(value=>Math.abs(value)>.001)?'EXECUTING':'IDLE';store.robot.timestamp=Date.now()}catch(error){console.warn('[Mining ROS] 已丢弃非法 JointState 消息',error)}});this.subscriptions.push(joints)
     this.commandTopic = new ROSLIB.Topic({ ros, name: miningTopics.command, messageType: miningMessageTypes.string })
+    this.actionTriggerTopic = new ROSLIB.Topic({ ros, name: miningTopics.actionTrigger, messageType: miningMessageTypes.string })
+    this.safetyStopTopic = new ROSLIB.Topic({ ros, name: miningTopics.safetyStop, messageType: miningMessageTypes.bool })
   }
 }
 

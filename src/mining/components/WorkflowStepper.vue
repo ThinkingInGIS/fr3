@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Check, Command, Factory, Flag, Network, ScanSearch } from 'lucide-vue-next'
 import { useMiningStore } from '../store'
 
@@ -10,7 +11,11 @@ const stages=[
   {key:'TASK_EXECUTION',label:'任务执行',sub:'感知与操作闭环',icon:Factory},
   {key:'COMPLETED',label:'作业完成',sub:'结果验证',icon:Flag},
 ] as const
-const index=()=>({IDLE:0,COMMAND:0,INTENT_UNDERSTANDING:1,TASK_PLANNING:2,TASK_EXECUTION:3,COMPLETED:4,PAUSED:Math.max(0,stages.findIndex(s=>s.key===store.workflow.previousStage)),ERROR:Math.max(0,stages.findIndex(s=>s.key===store.workflow.previousStage))}[store.workflow.stage])
+const planCompleted=computed(()=>{
+  const children=store.tasks.flatMap(task=>task.children??[])
+  return children.length>0&&children.every(task=>task.status==='COMPLETED')
+})
+const index=()=>planCompleted.value?4:({IDLE:0,COMMAND:0,INTENT_UNDERSTANDING:1,TASK_PLANNING:2,TASK_EXECUTION:3,COMPLETED:4,PAUSED:Math.max(0,stages.findIndex(s=>s.key===store.workflow.previousStage)),ERROR:Math.max(0,stages.findIndex(s=>s.key===store.workflow.previousStage))}[store.workflow.stage])
 </script>
 
 <template>
