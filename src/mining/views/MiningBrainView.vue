@@ -25,9 +25,8 @@ onBeforeUnmount(()=>source.disconnect())
     <div class="mining-main-grid">
       <aside class="mining-left"><CommandPanel /><LongHorizonTaskBoard /></aside>
       <section class="mining-center"><div class="mining-visual-row"><RobotDigitalTwin /><CameraPanel source="WRIST" title="相机1" /></div><RobotStatusPanel /><div class="mining-info-row"><TaskRuntimePanel /></div></section>
-      <aside class="mining-right"><CameraPanel source="GLOBAL" title="相机2" /><ExecutionLogPanel /></aside>
+      <aside class="mining-right"><CameraPanel source="GLOBAL" title="相机2" /><div class="execution-log-slot"><ExecutionLogPanel /><SafetyViolationDialog v-if="store.safetyViolation" /></div></aside>
     </div>
     <div class="min-width-warning">建议使用 1280 px 及以上宽度查看作业大脑</div>
-    <SafetyViolationDialog v-if="store.safetyViolation" />
   </main>
 </template>

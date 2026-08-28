@@ -78,19 +78,29 @@ VITE_FR3_URDF_URL=/models/fr3/fr3.urdf
 
 
 -----------------------------------------------------------------------------
-0.启动ros bridge
+# 0. 新建terminal启动ros bridge
 
 source rc.d/ros-teleop2.env
 roslaunch rosbridge_server rosbridge_websocket.launch   address:=0.0.0.0   port:=9090
 
 
-1.启动摄像头图像server
+# 1.新建terminal启动摄像头图像server
 
 source rc.d/ros-teleop2.env
-
 rosrun web_video_server web_video_server _port:=8081 _address:=0.0.0.0  _server_threads:=2
 
-2.启动d455 摄像头图像server
+# 2. 新建terminal启动坐标系转换工具
+chmod 755 /home/w/embodied_ws/src/embodied_brain_bridge/scripts/ros1_trajectory_status_bridge.py
+sed -i 's/\r$//' /home/w/embodied_ws/src/embodied_brain_bridge/scripts/ros1_trajectory_status_bridge.py
+
+source /opt/ros/noetic/setup.bash
+source /home/w/embodied_ws/devel/setup.bash
+
+rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
+  _base_frame:=base_link \
+  _tool_frame:=tool0 \
+  _trajectory_directory:=/home/w/.ros/pose_control_19/trajectories \
+  _yaml_path_stride:=5
 
 
 2.启动机械臂关节角 topic：joint/states
