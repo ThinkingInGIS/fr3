@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { Line2 } from 'three/examples/jsm/lines/Line2.js'
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import URDFLoader, { type URDFRobot } from 'urdf-loader'
 import { SimplifiedFr3 } from '@/three/robotModel'
 import type { MiningPoint, RobotTelemetry } from './types'
@@ -9,6 +12,7 @@ export type RobotModelState = 'loading' | 'ready' | 'error'
 export type PickPlaceState = 'idle' | 'approach' | 'grasp' | 'transfer' | 'place' | 'complete'
 
 const urJointNames = ['shoulder_pan_joint','shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint']
+const plannedLookAheadMetres = .38
 const sourcePosition = new THREE.Vector3(-.28,.12,-.22)
 const liftPosition = new THREE.Vector3(-.28,.36,-.22)
 const transferPosition = new THREE.Vector3(.35,.36,-.12)
@@ -36,8 +40,8 @@ export class MiningSceneManager {
   // Robot and paths are both children of this frame, whose origin is ROS base_link.
   private rosFrame = new THREE.Group()
   private pathGroup = new THREE.Group()
-  private plannedLine?: THREE.Line
-  private executedLine?: THREE.Line
+  private plannedLine?: Line2
+  private executedLine?: Line2
   private previewMarker = new THREE.Mesh(new THREE.SphereGeometry(.014, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffb84d }))
   private pickPlaceCurve = new THREE.CatmullRomCurve3([sourcePosition,liftPosition,transferPosition,placePosition])
   private workpiece?: THREE.Mesh<THREE.CylinderGeometry,THREE.MeshStandardMaterial>
@@ -71,7 +75,7 @@ export class MiningSceneManager {
   }
 
   updatePaths(planned: MiningPoint[], executed: MiningPoint[]) {
-    this.plannedLine = this.replaceLine(this.plannedLine, planned, true, 0x37a7ff)
+    this.plannedLine = this.replaceLine(this.plannedLine, this.plannedWindow(planned, executed), true, 0x37a7ff)
     this.executedLine = this.replaceLine(this.executedLine, executed, false, 0x2ee6d6)
   }
 
@@ -133,13 +137,43 @@ export class MiningSceneManager {
     },undefined,()=>this.onRobotModelState?.('error'))
   }
 
-  private replaceLine(current: THREE.Line | undefined, points: MiningPoint[], dashed: boolean, color: number) {
+  private plannedWindow(planned: MiningPoint[], executed: MiningPoint[]) {
+    if (planned.length < 2) return planned
+    const current = executed.at(-1)
+    let start = 0
+    if (current) {
+      let nearestDistance = Infinity
+      planned.forEach((point, index) => {
+        const distance = Math.hypot(point.x-current.x, point.y-current.y, point.z-current.z)
+        if (distance < nearestDistance) { nearestDistance = distance; start = index }
+      })
+    }
+    let end = Math.min(planned.length, start + 2), travelled = 0
+    while (end < planned.length && travelled < plannedLookAheadMetres) {
+      const previous = planned[end - 1], next = planned[end]
+      travelled += Math.hypot(next.x-previous.x, next.y-previous.y, next.z-previous.z)
+      end += 1
+    }
+    const upcoming = planned.slice(start, end)
+    // Begin the dashed preview at the live TCP position so the planned and executed lines join.
+    return current ? [current, ...upcoming.slice(1)] : upcoming
+  }
+
+  private replaceLine(current: Line2 | undefined, points: MiningPoint[], dashed: boolean, color: number) {
     if (current) { this.pathGroup.remove(current); current.geometry.dispose(); (current.material as THREE.Material).dispose() }
     if (points.length < 2) return undefined
-    const rosPoints=points.map(({x,y,z})=>new THREE.Vector3(x,y,z))
-    const geometry = new THREE.BufferGeometry().setFromPoints(dashed?new THREE.CatmullRomCurve3(rosPoints).getPoints(56):rosPoints)
-    const material = dashed ? new THREE.LineDashedMaterial({color,dashSize:.035,gapSize:.018,transparent:true,opacity:.85}) : new THREE.LineBasicMaterial({color,transparent:true,opacity:.95})
-    const line = new THREE.Line(geometry,material); if (dashed) line.computeLineDistances(); this.pathGroup.add(line); return line
+    // The URDF base mesh is authored with its horizontal axes opposite to the
+    // recorded ROS path convention. Rotate only the rendered paths 180° about
+    // ROS Z at base_link; joint values and incoming ROS coordinates stay intact.
+    const rosPoints=points.map(({x,y,z})=>new THREE.Vector3(-x,-y,z))
+    const geometry = new LineGeometry()
+    geometry.setPositions(rosPoints.flatMap(({x,y,z})=>[x,y,z]))
+    const material = new LineMaterial({
+      color, linewidth: dashed ? 3.6 : 5.2, transparent:true, opacity:dashed?.88:.98,
+      dashed, dashSize:.03, gapSize:.016, dashScale:1,
+    })
+    material.resolution.set(this.host.clientWidth,this.host.clientHeight)
+    const line = new Line2(geometry,material); if (dashed) line.computeLineDistances(); this.pathGroup.add(line); return line
   }
 
   private setPickPlaceState(state: PickPlaceState) {
@@ -174,11 +208,17 @@ export class MiningSceneManager {
     if(progress>=1){this.previewing=false;this.previewMarker.visible=false;this.setPickPlaceState('complete')}
   }
 
-  private resize() { const width=this.host.clientWidth,height=this.host.clientHeight;if(!width||!height)return;this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false) }
+  private resize() {
+    const width=this.host.clientWidth,height=this.host.clientHeight;if(!width||!height)return
+    this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false)
+    ;[this.plannedLine,this.executedLine].forEach((line) => {
+      if (line) (line.material as LineMaterial).resolution.set(width,height)
+    })
+  }
   private render = () => {
     this.frame=requestAnimationFrame(this.render);this.controls.update();const t=this.clock.getElapsedTime()
     if(this.previewing)this.updatePickPlace(t)
-    if(this.plannedLine)(this.plannedLine.material as THREE.LineDashedMaterial).opacity=.68+Math.sin(t*3)*.16
+    if(this.plannedLine)(this.plannedLine.material as LineMaterial).opacity=.74+Math.sin(t*3)*.14
     this.renderer.render(this.scene,this.camera)
   }
 }

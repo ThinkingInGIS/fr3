@@ -87,13 +87,14 @@ roslaunch rosbridge_server rosbridge_websocket.launch   address:=0.0.0.0   port:
 # 1.新建terminal启动摄像头图像server
 
 source rc.d/ros-teleop2.env
-rosrun web_video_server web_video_server _port:=8081 _address:=0.0.0.0  _server_threads:=2
+rosrun web_video_server web_video_server _port:=8081 _address:=0.0.0.0  _server_threads:=4
 
 # 2. 新建terminal启动坐标系转换工具
 chmod 755 /home/w/embodied_ws/src/embodied_brain_bridge/scripts/ros1_trajectory_status_bridge.py
 sed -i 's/\r$//' /home/w/embodied_ws/src/embodied_brain_bridge/scripts/ros1_trajectory_status_bridge.py
 
-source /opt/ros/noetic/setup.bash
+source rc.d/ros-teleop2.env
+##source /opt/ros/noetic/setup.bash
 source /home/w/embodied_ws/devel/setup.bash
 
 rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
@@ -101,6 +102,10 @@ rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
   _tool_frame:=tool0 \
   _trajectory_directory:=/home/w/.ros/pose_control_19/trajectories \
   _yaml_path_stride:=5
+
+---------------------------------------------------------------------------------
+
+# 0.启动d405 
 
 
 2.启动机械臂关节角 topic：joint/states
@@ -168,5 +173,6 @@ rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
   _yaml_path_stride:=5
 
 
-增加一个功能：监听名为/person_detector_realsense_d455/safety_violation的rostopic，类型为std_msgs/Bool，当收到消息为true时，页面弹出一个大的消息框，同时页面有两个大的圆形按钮，一个显示文字“遥操”，另一个显示文字“继续”，当点击遥操按钮则向rostopic为/person_detector_realsense_d455/stop（类型std_msgs/Bool）发送true，点击继续则发送false
 
+
+做以下修改：1.加粗作业规划窗口的规划路线虚线和执行路线的实线；2.同时规划路径不要一次性加载完成，仅加载当前执行点后一段位置的规划路径，这样看起来是动态规划的；3.同时不显示已经执行路径前的虚线
