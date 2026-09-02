@@ -78,6 +78,7 @@ export interface WrenchSample {
 export interface JointPositionSample {
   timestamp: number
   positions: number[]
+  velocities: number[]
 }
 
 export interface Detection {
