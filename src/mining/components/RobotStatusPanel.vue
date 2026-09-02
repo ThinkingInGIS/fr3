@@ -19,7 +19,7 @@ const renderForce = () => {
     animation: false, grid: { left: 34, right: 8, top: 24, bottom: 19 },
     legend: { top: 0, itemWidth: 9, itemHeight: 2, itemGap: 7, textStyle: { color: '#a9bed0', fontSize: 8 }, data: ['Fx', 'Fy', 'Fz'] },
     tooltip: { ...tooltip, valueFormatter: (value: number) => `${Number(value).toFixed(2)} N` }, xAxis: timeAxis,
-    yAxis: { type: 'value', min:-25, max:0, name: 'N', nameTextStyle: { color: '#8096ad', fontSize: 8 }, axisLabel: { color: '#8096ad', fontSize: 8 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: 'rgba(83,156,255,.11)' } } },
+    yAxis: { type: 'value', min:-10, max:10, name: 'N', nameTextStyle: { color: '#8096ad', fontSize: 8 }, axisLabel: { color: '#8096ad', fontSize: 8 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: 'rgba(83,156,255,.11)' } } },
     series: [series('Fx', '#ffff00', data.map(item => item.force.x)), series('Fy', '#00ff00', data.map(item => item.force.y)), series('Fz', '#ff00ff', data.map(item => item.force.z))],
   }, true)
 }
