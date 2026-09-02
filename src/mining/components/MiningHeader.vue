@@ -13,7 +13,7 @@ const mode=computed(()=>store.workflow.stage==='ERROR'?'故障':store.workflow.s
 <template>
   <header class="mine-header">
     <div class="mine-brand"><img class="mine-logo" src="/resources/logo1.png" alt="系统标志" /><div><h1>{{ miningConfig.title }}</h1></div></div>
-    <nav class="product-nav"><RouterLink to="/mining-brain">作业大脑</RouterLink><RouterLink to="/fr3">FR3 抓取系统 <ExternalLink :size="10" /></RouterLink></nav>
+    <nav class="product-nav"><RouterLink to="/mining-brain">作业大脑</RouterLink></nav>
     <div class="header-status-group">
       <button class="header-status connection-card" @click="expanded=!expanded"><RadioTower :size="17" /><div><span>综合连接</span><strong><i :class="store.connected?'online':'offline'" />{{ store.connected?'在线':'离线' }}</strong></div><ChevronDown :size="13" /></button>
       <div class="header-status"><Clock3 :size="17" /><div><span>系统时间</span><strong class="clock-value">{{ time }}</strong></div></div>

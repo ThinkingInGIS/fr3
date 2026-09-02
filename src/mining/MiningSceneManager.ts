@@ -114,6 +114,10 @@ export class MiningSceneManager {
       0, 0, 0, 1,
     ))
     this.rosFrame.add(this.fallbackRobot.group)
+    // Trajectory points use the controller frame, whose horizontal axes are
+    // opposite to the URDF base_link frame. Keep the model in base_link and
+    // rotate only the planned/executed path layer around ROS up (Z).
+    this.pathGroup.rotation.z = Math.PI
     this.previewMarker.visible=false; this.pathGroup.add(this.previewMarker); this.rosFrame.add(this.pathGroup)
     this.scene.add(this.rosFrame)
   }

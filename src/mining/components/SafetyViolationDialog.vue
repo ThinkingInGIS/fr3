@@ -21,7 +21,7 @@ const decide = async (stop: boolean) => {
     <div class="safety-violation-card">
       <TriangleAlert :size="56" aria-hidden="true" />
       <p> </p>
-      <h2 id="safety-violation-title">检测到人员进入安全区域</h2>
+      <h2 id="safety-violation-title">检测到人员进入危险区域</h2>
       <strong>机械臂作业已进入安全处置流程</strong>
       <div class="safety-choices">
         <button class="safety-choice remote" :disabled="busy" @click="decide(true)"><Hand :size="34" /><span>遥操</span></button>

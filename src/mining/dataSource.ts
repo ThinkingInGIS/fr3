@@ -1,5 +1,6 @@
 import ROSLIB from 'roslib'
 import { z } from 'zod'
+import { createUuid } from '@/utils/uuid'
 import { RosClient } from '@/ros/rosClient'
 import { miningConfig, miningMessageTypes, miningTopics } from './config'
 import { useMiningStore } from './store'
@@ -248,7 +249,7 @@ export class MiningRosDataSource implements MiningDataSource {
     if (!this.commandTopic || !this.actionTriggerTopic) throw new Error('ROS 尚未连接，指令未发送')
     const trimmed=command.trim()
     if (!trimmed) throw new Error('请输入作业指令')
-    const requestedAt=Date.now(),requestId=`web-${crypto.randomUUID()}`
+    const requestedAt=Date.now(),requestId=`web-${createUuid()}`
     this.awaitingNewTask=false
     this.commandTopic.publish(new ROSLIB.Message({ data: trimmed }))
     this.actionTriggerTopic.publish(new ROSLIB.Message({ data: JSON.stringify(createStartActionMessage(trimmed,requestId,requestedAt)) }))
@@ -294,7 +295,7 @@ export class MiningRosDataSource implements MiningDataSource {
     subscribeJson(miningTopics.plannedPath,plannedPathSchema,value=>{store.setPlannedPath(value);this.lastExecutedPathAt=0},'规划路径')
     subscribeJson(miningTopics.detections,z.array(detectionSchema),value=>{store.detections=value},'检测结果')
     subscribeJson(miningTopics.devices,z.array(deviceSchema),value=>{store.devices=value},'设备状态')
-    subscribeJson(miningTopics.events,eventSchema,value=>{store.addReceivedEvent({ ...value,id:value.id??crypto.randomUUID(),timestamp:value.timestamp??Date.now() })},'执行事件')
+    subscribeJson(miningTopics.events,eventSchema,value=>{store.addReceivedEvent({ ...value,id:value.id??createUuid(),timestamp:value.timestamp??Date.now() })},'执行事件')
     const safetyViolation=new ROSLIB.Topic({ros,name:miningTopics.safetyViolation,messageType:miningMessageTypes.bool})
     safetyViolation.subscribe(message=>{
       if ((message as { data?: unknown }).data !== true) return

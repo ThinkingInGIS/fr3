@@ -74,10 +74,10 @@ VITE_FR3_URDF_URL=/models/fr3/fr3.urdf
 ## 当前边界
 
 已完成阶段 1、阶段 2 的演示能力和阶段 3 接口骨架。未完成真机 URDF/TF、MoveIt `DisplayTrajectory` 解析、真实 WebRTC、ROS Action 权限控制和硬件安全急停。Web“取消”只表示任务取消请求。
+http://172.20.161.219:5174/
 
-
-
------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+-------------------------------前端页面适配的3个 ros 服务----------------------------------------------------------------------
 # 0. 新建terminal启动ros bridge
 
 source rc.d/ros-teleop2.env
@@ -110,9 +110,9 @@ source rc.d/ros-teleop2.env
 roslaunch realsense2_camera rs_camera.launch   camera:=camera405   tf_prefix:=camera405   serial_no:=260522273009   device_type:=d405   enable_color:=true   enable_depth:=true   enable_infra:=false   enable_confidence:=false   enable_gyro:=false   enable_accel:=false   align_depth:=false   depth_width:=640   depth_height:=480
 
 
+----------------------------------------------------------------------------------------------------------------------------
 
-
-2.启动机械臂关节角 topic：joint/states
+## 2.启动ur机械臂关节角 topic：joint/states
 打开192.168.1.105(w)
 
 source rc.d/ros-teleop2.env

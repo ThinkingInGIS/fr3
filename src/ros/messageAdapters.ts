@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { DetectedObject } from '@/types/vision'
 import type { ServoError, TaskEvent, TaskState } from '@/types/task'
+import { createUuid } from '@/utils/uuid'
 
 const objectState = z.enum(['graspable', 'selected', 'occluded', 'unreachable', 'grasped', 'placed'])
 const detectedObjectSchema = z.object({
@@ -24,7 +25,7 @@ const servoSchema = z.object({
   status: z.enum(['INACTIVE', 'ALIGNING', 'CONVERGED', 'FAILED']),
 })
 const taskEventSchema = z.object({
-  id: z.string().default(() => crypto.randomUUID()), timestamp: z.number().default(() => Date.now()),
+  id: z.string().default(createUuid), timestamp: z.number().default(() => Date.now()),
   level: z.enum(['info', 'success', 'warning', 'error']), stage: taskStage, message: z.string(),
 })
 

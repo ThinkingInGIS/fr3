@@ -24,7 +24,7 @@ onBeforeUnmount(()=>source.disconnect())
     <WorkflowStepper />
     <div class="mining-main-grid">
       <aside class="mining-left"><CommandPanel /><LongHorizonTaskBoard /></aside>
-      <section class="mining-center"><div class="mining-visual-row"><CameraPanel source="WRIST" title="局部视野" /><RobotDigitalTwin /></div><RobotStatusPanel /><div class="mining-info-row"><TaskRuntimePanel /></div></section>
+      <section class="mining-center"><div class="mining-visual-row"><RobotDigitalTwin /><CameraPanel source="WRIST" title="局部视野" /></div><RobotStatusPanel /><div class="mining-info-row"><TaskRuntimePanel /></div></section>
       <aside class="mining-right"><CameraPanel source="GLOBAL" title="全局视野" /><div class="execution-log-slot"><ExecutionLogPanel /><SafetyViolationDialog v-if="store.safetyViolation" /></div></aside>
     </div>
     <div class="min-width-warning">建议使用 1280 px 及以上宽度查看作业大脑</div>
