@@ -75,8 +75,8 @@ export class MiningSceneManager {
   }
 
   updatePaths(planned: MiningPoint[], executed: MiningPoint[]) {
-    this.plannedLine = this.replaceLine(this.plannedLine, this.plannedWindow(planned, executed), true, 0x37a7ff)
-    this.executedLine = this.replaceLine(this.executedLine, executed, false, 0x2ee6d6)
+    this.plannedLine = this.replaceLine(this.plannedLine, this.plannedWindow(planned, executed), true, 0x00FF00)
+    this.executedLine = this.replaceLine(this.executedLine, executed, false, 0xFF0000)
   }
 
   setView(view: MiningView) {
@@ -114,10 +114,6 @@ export class MiningSceneManager {
       0, 0, 0, 1,
     ))
     this.rosFrame.add(this.fallbackRobot.group)
-    // Trajectory points use the controller frame, whose horizontal axes are
-    // opposite to the URDF base_link frame. Keep the model in base_link and
-    // rotate only the planned/executed path layer around ROS up (Z).
-    this.pathGroup.rotation.z = Math.PI
     this.previewMarker.visible=false; this.pathGroup.add(this.previewMarker); this.rosFrame.add(this.pathGroup)
     this.scene.add(this.rosFrame)
   }
