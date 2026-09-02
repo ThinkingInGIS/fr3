@@ -19,7 +19,7 @@ const renderForce = () => {
     animation: false, grid: { left: 34, right: 8, top: 24, bottom: 19 },
     legend: { top: 0, itemWidth: 9, itemHeight: 2, itemGap: 7, textStyle: { color: '#a9bed0', fontSize: 8 }, data: ['Fx', 'Fy', 'Fz'] },
     tooltip: { ...tooltip, valueFormatter: (value: number) => `${Number(value).toFixed(2)} N` }, xAxis: timeAxis,
-    yAxis: { type: 'value', name: 'N', nameTextStyle: { color: '#8096ad', fontSize: 8 }, axisLabel: { color: '#8096ad', fontSize: 8 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: 'rgba(83,156,255,.11)' } } },
+    yAxis: { type: 'value', min:-25, max:0, name: 'N', nameTextStyle: { color: '#8096ad', fontSize: 8 }, axisLabel: { color: '#8096ad', fontSize: 8 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: 'rgba(83,156,255,.11)' } } },
     series: [series('Fx', '#ffff00', data.map(item => item.force.x)), series('Fy', '#00ff00', data.map(item => item.force.y)), series('Fz', '#ff00ff', data.map(item => item.force.z))],
   }, true)
 }
@@ -52,12 +52,19 @@ onBeforeUnmount(() => { observer?.disconnect(); forceChart?.dispose(); jointChar
 <template>
   <section class="mine-panel robot-status-card">
     <div class="mine-panel-head compact">
-      <div><h2>实时作业状态</h2></div>
-      <div class="robot-status-tools"><b :class="['controller-state', store.robot.controllerState.toLowerCase()]">{{ stale ? 'STALE' : store.robot.controllerState }}</b><span class="wrench-unit">实时曲线 · 20 s</span></div>
+      <div>
+        <h2>实时作业状态</h2>
+      </div>
+      <div class="robot-status-tools"><b :class="['controller-state', store.robot.controllerState.toLowerCase()]">{{
+        stale ? 'STALE' : store.robot.controllerState }}</b><span class="wrench-unit">实时曲线 · 20 s</span></div>
     </div>
     <div class="robot-status-charts">
-      <div class="robot-status-chart"><span>末端三轴力 · N</span><div ref="forceChartHost" class="wrench-chart" aria-label="末端三轴力实时曲线" /></div>
-      <div class="robot-status-chart"><span>六关节角 · rad</span><div ref="jointChartHost" class="wrench-chart" aria-label="六关节角实时曲线" /></div>
+      <div class="robot-status-chart"><span>末端三轴力 · N</span>
+        <div ref="forceChartHost" class="wrench-chart" aria-label="末端三轴力实时曲线" />
+      </div>
+      <div class="robot-status-chart"><span>六关节角 · rad</span>
+        <div ref="jointChartHost" class="wrench-chart" aria-label="六关节角实时曲线" />
+      </div>
     </div>
   </section>
 </template>

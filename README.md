@@ -94,7 +94,6 @@ chmod 755 /home/w/embodied_ws/src/embodied_brain_bridge/scripts/ros1_trajectory_
 sed -i 's/\r$//' /home/w/embodied_ws/src/embodied_brain_bridge/scripts/ros1_trajectory_status_bridge.py
 
 source rc.d/ros-teleop2.env
-##source /opt/ros/noetic/setup.bash
 source /home/w/embodied_ws/devel/setup.bash
 
 rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
@@ -189,4 +188,6 @@ git add .
 git commit -m "说明本次修改"
 git pull --no-rebase origin main
 git push origin main
+
+
 
