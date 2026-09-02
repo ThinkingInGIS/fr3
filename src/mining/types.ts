@@ -75,6 +75,11 @@ export interface WrenchSample {
   torque: { x: number; y: number; z: number }
 }
 
+export interface JointPositionSample {
+  timestamp: number
+  positions: number[]
+}
+
 export interface Detection {
   id: string
   className: string

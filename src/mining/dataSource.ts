@@ -161,7 +161,7 @@ export class MiningMockDataSource implements MiningDataSource {
   private animateRobot(time: number, progress: number) {
     const store = useMiningStore(), phase = this.stepIndex * .72 + progress * Math.PI
     const home=[-.28,-.52,.18,-1.62,.12,1.28,.54]
-    store.robot.timestamp = Date.now(); store.robot.jointPosition = store.robot.jointNames.map((_, index) => (home[index]??0)+Math.sin(phase + index * .55) * (.08 + index * .006))
+    store.robot.timestamp = Date.now(); store.robot.jointPosition = store.robot.jointNames.map((_, index) => (home[index]??0)+Math.sin(phase + index * .55) * (.08 + index * .006)); store.appendJointPositionSample({timestamp:store.robot.timestamp,positions:[...store.robot.jointPosition]})
     store.robot.jointVelocity = store.robot.jointNames.map((_, index) => Math.cos(phase + index * .55) * .12); store.robot.jointEffort = store.robot.jointNames.map((_, index) => 3.5 + Math.sin(time / 800 + index) * .8)
     store.robot.tcpPosition = { x: .34 + progress * .22, y: -.14 + Math.sin(phase) * .06, z: .38 - progress * .18 }
     store.robot.tcpLinearSpeed = progress > .95 ? .01 : .12 + Math.sin(progress * Math.PI) * .08; store.robot.tcpAngularSpeed = .18 + Math.cos(progress * Math.PI) * .06
@@ -318,7 +318,7 @@ export class MiningRosDataSource implements MiningDataSource {
     const wrench=new ROSLIB.Topic({ros,name:miningTopics.wrench,messageType:miningMessageTypes.wrenchStamped,throttle_rate:100})
     wrench.subscribe(message=>{try{store.appendWrenchSample(adaptWrenchStamped(message as WrenchStampedMessage))}catch(error){console.warn('[Mining ROS] 已丢弃非法 WrenchStamped 消息',error)}})
     this.subscriptions.push(wrench)
-    const joints=new ROSLIB.Topic({ros,name:miningTopics.joints,messageType:miningMessageTypes.jointState,throttle_rate:50});joints.subscribe(message=>{try{const data=adaptJointState(message as JointStateMessage);store.robot.jointNames=data.names;store.robot.jointPosition=data.positions;store.robot.jointVelocity=data.velocities;store.robot.jointEffort=data.efforts;store.robot.controllerState=data.velocities.some(value=>Math.abs(value)>.001)?'EXECUTING':'IDLE';store.robot.timestamp=Date.now()}catch(error){console.warn('[Mining ROS] 已丢弃非法 JointState 消息',error)}});this.subscriptions.push(joints)
+    const joints=new ROSLIB.Topic({ros,name:miningTopics.joints,messageType:miningMessageTypes.jointState,throttle_rate:50});joints.subscribe(message=>{try{const data=adaptJointState(message as JointStateMessage);store.robot.jointNames=data.names;store.robot.jointPosition=data.positions;store.robot.jointVelocity=data.velocities;store.robot.jointEffort=data.efforts;store.robot.controllerState=data.velocities.some(value=>Math.abs(value)>.001)?'EXECUTING':'IDLE';store.robot.timestamp=Date.now();store.appendJointPositionSample({timestamp:store.robot.timestamp,positions:[...data.positions]})}catch(error){console.warn('[Mining ROS] 已丢弃非法 JointState 消息',error)}});this.subscriptions.push(joints)
     this.commandTopic = new ROSLIB.Topic({ ros, name: miningTopics.command, messageType: miningMessageTypes.string })
     this.actionTriggerTopic = new ROSLIB.Topic({ ros, name: miningTopics.actionTrigger, messageType: miningMessageTypes.string })
     this.safetyStopTopic = new ROSLIB.Topic({ ros, name: miningTopics.safetyStop, messageType: miningMessageTypes.bool })
