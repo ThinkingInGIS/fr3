@@ -69,6 +69,12 @@ export interface RobotTelemetry {
   executedProgress: number
 }
 
+export interface WrenchSample {
+  timestamp: number
+  force: { x: number; y: number; z: number }
+  torque: { x: number; y: number; z: number }
+}
+
 export interface Detection {
   id: string
   className: string

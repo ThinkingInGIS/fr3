@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { miningConfig } from './config'
-import type { Detection, DeviceStatus, ExecutionEvent, MiningPoint, RobotTelemetry, TaskNode, TaskRuntimeState, WorkflowState } from './types'
+import type { Detection, DeviceStatus, ExecutionEvent, MiningPoint, RobotTelemetry, TaskNode, TaskRuntimeState, WorkflowState, WrenchSample } from './types'
 
 const jointNames = Array.from({ length: 7 }, (_, index) => `fr3_joint${index + 1}`)
 const robotInitial = (): RobotTelemetry => ({
@@ -27,6 +27,7 @@ export const useMiningStore = defineStore('miningBrain', {
     events: [] as ExecutionEvent[],
     plannedPath: [] as MiningPoint[],
     executedPath: [] as MiningPoint[],
+    wrenchHistory: [] as WrenchSample[],
     speed: 1,
     connected: false,
     running: false,
@@ -63,10 +64,14 @@ export const useMiningStore = defineStore('miningBrain', {
       this.executedPath.push(point)
       if(this.executedPath.length>800)this.executedPath.splice(0,this.executedPath.length-800)
     },
+    appendWrenchSample(sample: WrenchSample) {
+      this.wrenchHistory.push(sample)
+      if(this.wrenchHistory.length>240)this.wrenchHistory.splice(0,this.wrenchHistory.length-240)
+    },
     setSafetyViolation(active: boolean) { this.safetyViolation = active },
     resetState() {
       this.workflow = workflowInitial(); this.runtime = runtimeInitial(); this.tasks = []; this.robot = robotInitial(); this.detections = []
-      this.events = []; this.plannedPath = []; this.executedPath = []; this.running = false; this.lastActionResult = '—'; this.safetyViolation = false
+      this.events = []; this.plannedPath = []; this.executedPath = []; this.wrenchHistory = []; this.running = false; this.lastActionResult = '—'; this.safetyViolation = false
     },
   },
 })

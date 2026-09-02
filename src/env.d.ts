@@ -20,4 +20,5 @@ interface ImportMetaEnv {
   readonly VITE_COMMAND_CONFIRM?: string
   readonly VITE_STALE_TIMEOUT_MS?: string
   readonly VITE_MAX_LOG_COUNT?: string
+  readonly VITE_TOPIC_WRENCH?: string
 }

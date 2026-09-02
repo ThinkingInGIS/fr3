@@ -179,4 +179,13 @@ rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
 
 
 
-做以下修改：1.加粗作业规划窗口的规划路线虚线和执行路线的实线；2.同时规划路径不要一次性加载完成，仅加载当前执行点后一段位置的规划路径，这样看起来是动态规划的；3.同时不显示已经执行路径前的虚线
+## 与打印机旁的nuc 进行数据同步版本维护
+# 开始修改前
+git switch main
+git pull --no-rebase origin main
+
+# 修改、测试后
+git add .
+git commit -m "说明本次修改"
+git pull --no-rebase origin main
+git push origin main

@@ -4,7 +4,7 @@ import { createUuid } from '@/utils/uuid'
 import { RosClient } from '@/ros/rosClient'
 import { miningConfig, miningMessageTypes, miningTopics } from './config'
 import { useMiningStore } from './store'
-import type { Detection, DeviceStatus, MiningCommand, MiningPoint, TaskNode, WorkflowState } from './types'
+import type { Detection, DeviceStatus, MiningCommand, MiningPoint, TaskNode, WorkflowState, WrenchSample } from './types'
 
 export interface MiningDataSource {
   readonly mode: 'mock' | 'ros'
@@ -218,6 +218,7 @@ export const isCompletedTaskPlan = (tasks: TaskNode[]) => {
 }
 
 type JointStateMessage = { name?:unknown;position?:unknown;velocity?:unknown;effort?:unknown }
+type WrenchStampedMessage = { header?: { stamp?: { secs?: unknown; nsecs?: unknown; sec?: unknown; nanosec?: unknown } }; wrench?: { force?: { x?: unknown; y?: unknown; z?: unknown }; torque?: { x?: unknown; y?: unknown; z?: unknown } } }
 export const adaptJointState = (message: JointStateMessage) => {
   if(!Array.isArray(message.name)||!Array.isArray(message.position))throw new Error('JointState 缺少 name 或 position 数组')
   const count=Math.min(message.name.length,message.position.length)
@@ -225,6 +226,17 @@ export const adaptJointState = (message: JointStateMessage) => {
   if(!count||positions.some(value=>!Number.isFinite(value)))throw new Error('JointState 关节数据为空或包含非法角度')
   const optional=(value:unknown)=>Array.isArray(value)?value.slice(0,count).map(Number).map(item=>Number.isFinite(item)?item:0):[]
   return { names,positions,velocities:optional(message.velocity),efforts:optional(message.effort) }
+}
+export const adaptWrenchStamped = (message: WrenchStampedMessage): WrenchSample => {
+  const vector=(value:unknown,label:string) => {
+    if(typeof value!=='object'||value===null)throw new Error(`WrenchStamped 缺少 ${label}`)
+    const source=value as { x?:unknown;y?:unknown;z?:unknown },result={x:Number(source.x),y:Number(source.y),z:Number(source.z)}
+    if(Object.values(result).some(component=>!Number.isFinite(component)))throw new Error(`WrenchStamped ${label} 包含非法数值`)
+    return result
+  }
+  const stamp=message.header?.stamp,seconds=Number(stamp?.secs??stamp?.sec),nanoseconds=Number(stamp?.nsecs??stamp?.nanosec)
+  const timestamp=Number.isFinite(seconds)&&seconds>0?seconds*1000+(Number.isFinite(nanoseconds)?nanoseconds/1e6:0):Date.now()
+  return {timestamp,force:vector(message.wrench?.force,'force'),torque:vector(message.wrench?.torque,'torque')}
 }
 
 export class MiningRosDataSource implements MiningDataSource {
@@ -303,6 +315,9 @@ export class MiningRosDataSource implements MiningDataSource {
       store.addEvent({ level: 'ERROR', stage: 'PAUSED', message: '检测到人员安全违规，等待选择遥操或继续作业' })
     })
     this.subscriptions.push(safetyViolation)
+    const wrench=new ROSLIB.Topic({ros,name:miningTopics.wrench,messageType:miningMessageTypes.wrenchStamped,throttle_rate:100})
+    wrench.subscribe(message=>{try{store.appendWrenchSample(adaptWrenchStamped(message as WrenchStampedMessage))}catch(error){console.warn('[Mining ROS] 已丢弃非法 WrenchStamped 消息',error)}})
+    this.subscriptions.push(wrench)
     const joints=new ROSLIB.Topic({ros,name:miningTopics.joints,messageType:miningMessageTypes.jointState,throttle_rate:50});joints.subscribe(message=>{try{const data=adaptJointState(message as JointStateMessage);store.robot.jointNames=data.names;store.robot.jointPosition=data.positions;store.robot.jointVelocity=data.velocities;store.robot.jointEffort=data.efforts;store.robot.controllerState=data.velocities.some(value=>Math.abs(value)>.001)?'EXECUTING':'IDLE';store.robot.timestamp=Date.now()}catch(error){console.warn('[Mining ROS] 已丢弃非法 JointState 消息',error)}});this.subscriptions.push(joints)
     this.commandTopic = new ROSLIB.Topic({ ros, name: miningTopics.command, messageType: miningMessageTypes.string })
     this.actionTriggerTopic = new ROSLIB.Topic({ ros, name: miningTopics.actionTrigger, messageType: miningMessageTypes.string })

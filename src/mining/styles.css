@@ -392,6 +392,8 @@
 }
 .mining-center {
   grid-column: 2 / span 2;
+  --robot-status-height: 150px;
+  --mining-info-height: 148px;
   grid-template-rows: minmax(250px, 1fr) var(--robot-status-height) var(--mining-info-height);
 }
 .mining-right {
@@ -1030,6 +1032,8 @@
 }
 .robot-status-card {
   overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 .robot-status-tools {
   display: flex;
@@ -1058,6 +1062,15 @@
 }
 .controller-state.error {
   color: var(--mine-red);
+}
+.wrench-unit {
+  color: var(--mine-muted);
+  font: 8px var(--mine-mono);
+}
+.wrench-chart {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
 .robot-metrics {
   display: grid;
@@ -1522,7 +1535,7 @@
   .mining-left {
     grid-template-rows: 166px minmax(0, 1fr);
   }
-  .mining-center { grid-template-rows: minmax(230px, 1fr) var(--robot-status-height) var(--mining-info-height); }
+  .mining-center { --robot-status-height: 132px; --mining-info-height: 140px; grid-template-rows: minmax(230px, 1fr) var(--robot-status-height) var(--mining-info-height); }
   .mining-right { grid-template-rows: minmax(230px, 1fr) var(--robot-status-height) var(--mining-info-height); }
   .mine-panel {
     padding: 8px;
@@ -1570,8 +1583,8 @@
     grid-template-rows: 150px minmax(0, 1fr);
   }
   .mining-center {
-    --robot-status-height: 92px;
-    --mining-info-height: 162px;
+    --robot-status-height: 118px;
+    --mining-info-height: 136px;
     grid-template-rows: minmax(215px, 1fr) var(--robot-status-height) var(--mining-info-height);
   }
   .mining-right {

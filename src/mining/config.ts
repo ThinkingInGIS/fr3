@@ -19,6 +19,7 @@ export const miningConfig = Object.freeze({
 
 export const miningTopics = Object.freeze({
   joints: env.VITE_TOPIC_JOINT_STATES ?? '/joint_states',
+  wrench: env.VITE_TOPIC_WRENCH ?? '/wrench',
   workflow: env.VITE_TOPIC_WORKFLOW_STATE ?? '/embodied_brain/workflow_state',
   taskPlan: env.VITE_TOPIC_TASK_PLAN ?? '/embodied_brain/task_plan',
   taskState: env.VITE_TOPIC_MINING_TASK_STATE ?? '/embodied_brain/task_state',
@@ -37,8 +38,10 @@ export const miningMessageTypes = Object.freeze(miningConfig.rosVersion === 1 ? 
   string: 'std_msgs/String',
   bool: 'std_msgs/Bool',
   jointState: 'sensor_msgs/JointState',
+  wrenchStamped: 'geometry_msgs/WrenchStamped',
 } : {
   string: 'std_msgs/msg/String',
   bool: 'std_msgs/msg/Bool',
   jointState: 'sensor_msgs/msg/JointState',
+  wrenchStamped: 'geometry_msgs/msg/WrenchStamped',
 })
