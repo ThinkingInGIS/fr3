@@ -105,7 +105,7 @@ rosrun embodied_brain_bridge ros1_trajectory_status_bridge.py \
 
 ---------------------------------------------------------------------------------
 
-# 0.启动d405 
+# 0.启动d405 相机 驱动 
 source rc.d/ros-teleop2.env
 roslaunch realsense2_camera rs_camera.launch   camera:=camera405   tf_prefix:=camera405   serial_no:=260522273009   device_type:=d405   enable_color:=true   enable_depth:=true   enable_infra:=false   enable_confidence:=false   enable_gyro:=false   enable_accel:=false   align_depth:=false   depth_width:=640   depth_height:=480
 
