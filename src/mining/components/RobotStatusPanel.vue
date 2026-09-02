@@ -14,16 +14,12 @@ const render=()=>{
   chart.setOption({
     animation:false,
     grid:{left:38,right:40,top:24,bottom:19},
-    legend:{top:0,itemWidth:10,itemHeight:2,itemGap:8,textStyle:{color:'#a9bed0',fontSize:8},data:['Fx','Fy','Fz','Mx','My','Mz']},
+    legend:{top:0,itemWidth:10,itemHeight:2,itemGap:8,textStyle:{color:'#a9bed0',fontSize:8},data:['Fx','Fy','Fz']},
     tooltip:{trigger:'axis',backgroundColor:'#0b1522',borderColor:'#31556f',textStyle:{color:'#eaf3ff',fontSize:10},valueFormatter:(value:number)=>Number(value).toFixed(2)},
     xAxis:{type:'value',min:-20,max:0,axisLabel:{color:'#8096ad',fontSize:8,formatter:'{value}s'},axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'rgba(83,156,255,.11)'}}},
-    yAxis:[
-      {type:'value',name:'N',nameTextStyle:{color:'#8096ad',fontSize:8},axisLabel:{color:'#8096ad',fontSize:8},axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'rgba(83,156,255,.11)'}}},
-      {type:'value',name:'N·m',nameTextStyle:{color:'#8096ad',fontSize:8},axisLabel:{color:'#8096ad',fontSize:8},axisLine:{show:false},axisTick:{show:false},splitLine:{show:false}},
-    ],
+    yAxis:{type:'value',name:'N',nameTextStyle:{color:'#8096ad',fontSize:8},axisLabel:{color:'#8096ad',fontSize:8},axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'rgba(83,156,255,.11)'}}},
     series:[
       series('Fx','#37a7ff',data.map(item=>item.force.x),0),series('Fy','#69d1ff',data.map(item=>item.force.y),0),series('Fz','#7de0c7',data.map(item=>item.force.z),0),
-      series('Mx','#ffb84d',data.map(item=>item.torque.x),1),series('My','#ff7d91',data.map(item=>item.torque.y),1),series('Mz','#c99cff',data.map(item=>item.torque.z),1),
     ],
   },true)
 }
@@ -34,7 +30,7 @@ onBeforeUnmount(()=>{observer?.disconnect();chart?.dispose()})
 
 <template>
   <section class="mine-panel robot-status-card">
-    <div class="mine-panel-head compact"><div><h2>实时作业状态</h2></div><div class="robot-status-tools"><b :class="['controller-state',store.robot.controllerState.toLowerCase()]">{{ stale?'STALE':store.robot.controllerState }}</b><span class="wrench-unit">力 N · 力矩 N·m</span></div></div>
+    <div class="mine-panel-head compact"><div><h2>实时作业状态</h2></div><div class="robot-status-tools"><b :class="['controller-state',store.robot.controllerState.toLowerCase()]">{{ stale?'STALE':store.robot.controllerState }}</b><span class="wrench-unit">末端三轴力 · N</span></div></div>
     <!-- <div class="robot-metrics">
       <div><Move3D :size="14" /><span>末端位置 X / Y / Z</span><strong>{{ store.robot.tcpPosition.x.toFixed(3) }} · {{ store.robot.tcpPosition.y.toFixed(3) }} · {{ store.robot.tcpPosition.z.toFixed(3) }}<small> m</small></strong></div>
       <div><Activity :size="14" /><span>线速度 / 角速度</span><strong>{{ store.robot.tcpLinearSpeed.toFixed(2) }}<small> m/s</small> · {{ store.robot.tcpAngularSpeed.toFixed(2) }}<small> rad/s</small></strong></div>
