@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { Activity, ChevronDown, Clock3, ExternalLink, RadioTower } from 'lucide-vue-next'
+import { Activity, ChevronDown, Clock3, RadioTower } from 'lucide-vue-next'
 import { miningConfig } from '../config'
 import { useMiningStore } from '../store'
 

@@ -13,7 +13,7 @@ const elapsed = computed(() => {
 const currentTaskTitle = computed(() => rosRuntime.value ? store.runtime.currentTaskTitle : store.currentTask?.title)
 const planningDuration = computed(() => rosRuntime.value ? store.runtime.planningDurationMs : store.workflow.planningDurationMs)
 const currentObjectId = computed(() => rosRuntime.value ? store.runtime.currentObjectId : store.workflow.currentObjectId)
-const decisionReasons = computed(() => rosRuntime.value ? store.runtime.decisionReasons : store.workflow.decisionReasons)
+// const decisionReasons = computed(() => rosRuntime.value ? store.runtime.decisionReasons : store.workflow.decisionReasons)
 const overallProgress = computed(() => rosRuntime.value ? store.runtime.overallProgress : store.workflow.progress)
 const lastResult = computed(() => rosRuntime.value ? store.runtime.lastActionResult : store.lastActionResult)
 const format = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`
