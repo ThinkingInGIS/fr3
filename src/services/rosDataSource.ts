@@ -1,4 +1,4 @@
-import ROSLIB from 'roslib'
+import ROSLIB from '@/ros/roslibBrowser'
 import { runtimeConfig } from '@/config/runtime'
 import { useConnectionStore } from '@/stores/connection'
 import { useRobotStore } from '@/stores/robot'

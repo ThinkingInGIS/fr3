@@ -1,4 +1,4 @@
-import ROSLIB from 'roslib'
+import ROSLIB from './roslibBrowser'
 import type { SystemCommand } from '@/types/task'
 
 export class CommandService {

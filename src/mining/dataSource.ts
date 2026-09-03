@@ -1,4 +1,4 @@
-import ROSLIB from 'roslib'
+import ROSLIB from '@/ros/roslibBrowser'
 import { z } from 'zod'
 import { createUuid } from '@/utils/uuid'
 import { RosClient } from '@/ros/rosClient'
