@@ -67,7 +67,6 @@ onBeforeUnmount(() => { observer?.disconnect(); [forceChart, torqueChart, positi
       <div class="robot-status-chart"><span>六关节速度 · rad/s</span><div ref="velocityHost" class="wrench-chart" aria-label="六关节速度实时曲线" /></div>
       <div class="robot-status-chart"><span>末端三轴力矩 · N·m</span><div ref="torqueHost" class="wrench-chart" aria-label="末端三轴力矩实时曲线" /></div>
       <div class="robot-status-chart"><span>六关节角 · rad</span><div ref="positionHost" class="wrench-chart" aria-label="六关节角实时曲线" /></div>
-      
     </div>
   </section>
 </template>
