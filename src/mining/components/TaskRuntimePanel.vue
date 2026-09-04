@@ -42,7 +42,7 @@ const format = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, '0'
           <Crosshair :size="12" />{{ currentObjectId ?? '—' }}
         </strong>
       </div>
-      
+
     </div>
     <div class="runtime-progress"><span>整体进度</span><i><b :style="{ width: `${overallProgress}%` }" /></i><strong>{{
       overallProgress.toFixed(0) }}%</strong><em>{{ lastResult }}</em></div>
